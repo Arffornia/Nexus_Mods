@@ -1,6 +1,6 @@
-import { ModFile } from "../../../src/ModFile";
-import { CurseforgeAPI } from "../../../src/api/CurseforgeAPI";
-import { HashTypes } from "../../../src/hash/HashTypes";
+import { ModFile } from "@src/ModFile";
+import { CurseforgeAPI } from "@src/api/CurseforgeAPI";
+import { HashTypes } from "@src/hash/HashTypes";
 
 describe("CurseForge get ModFile AE2", () => {
     it("Should return the ModFile of a AE2 mod", async () => {        

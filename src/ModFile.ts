@@ -1,4 +1,4 @@
-import { HashTypes } from "./hash/HashTypes";
+import { HashTypes } from "@src/hash/HashTypes";
 
 /**
  * Normalized representation of a mod file.

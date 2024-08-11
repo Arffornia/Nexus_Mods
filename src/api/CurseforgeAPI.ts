@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { ModFile } from '../ModFile';
-import { HashTypes } from '../hash/HashTypes';
+import { ModFile } from '@src/ModFile';
+import { HashTypes } from '@src/hash/HashTypes';
 
 export class CurseforgeAPI {
     private endpointURL: string;
