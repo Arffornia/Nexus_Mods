@@ -20,3 +20,26 @@ describe("Modrinth get ModFile AE2", () => {
         expect(expected).toEqual(result);
     });
 });
+
+describe("Modrinth get ModFile with invalid versionId", () => {
+    let originalConsoleError: typeof console.error;
+
+    beforeAll(() => {
+        // Set silent the console.error
+        originalConsoleError = console.error;
+        console.error = jest.fn();
+    });
+
+    afterAll(() => {
+        // Restore the console.error
+        console.error = originalConsoleError;
+    });
+
+    it("Should throw an error for an invalid versionId", async () => {
+        const modrinthAPI = new ModrinthAPI();
+        const invalidVersionId = 'invalid_version_id';
+
+        // Expect an error to be thrown when an invalid versionId is used
+        await expect(modrinthAPI.getModFile(invalidVersionId)).rejects.toThrow();
+    });
+});
