@@ -19,6 +19,13 @@ export class ModFile {
         this.url = url;
     }   
 
+    public update(
+        modDir: string,
+        checkHash: boolean = false, 
+    ) {
+        // TODO
+    }
+
     public toString(): string {
         return `ModFile {
             filename: ${this.filename},
