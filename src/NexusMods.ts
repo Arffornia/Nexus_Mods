@@ -1,6 +1,5 @@
 import { ModFile } from "@src/ModFile";
-import { CurseforgeAPI } from "@src/api/CurseforgeAPI";
-import { ModrinthAPI } from "@src/api/ModrinthAPI";
+import { createFolderIfNotExist } from "./utils/fileUtils";
 
 import * as fs from 'fs';
 
@@ -16,22 +15,27 @@ export class NexusMods {
         this.modFiles.push(modFile);
     }
 
-    public updateMods(
+    public async updateMods(
         checkHash: boolean = false, 
         deleteUnauthorizedMods: boolean = false
-    ) {
-        // Create folder if not exist
-        if(!fs.existsSync(this.modDir)) {
-            fs.mkdirSync(this.modDir, { recursive: true });
-            console.log(`Mods directory ${this.modDir} created successfully.`);
+    ): Promise<void> {
+        try {
+            // Create folder if not exist
+            if (createFolderIfNotExist(this.modDir)) {
+                console.log(`Mods directory ${this.modDir} created successfully.`);
+            }
+    
+            // Update all mods
+            await Promise.all(this.modFiles.map(async (modFile) => {
+                try {
+                    await modFile.update(this.modDir, checkHash);
+                } catch (error) {
+                    console.error(`Error updating mod file ${modFile.getFileName}:`, error);
+                }
+            }));
+    
+        } catch (error) {
+            console.error('Error during mods update:', error);
         }
-
-        // Update all mods
-        this.modFiles.forEach(modFile => {
-            modFile.update(
-                this.modDir,
-                checkHash
-            )
-        });
     }
 }

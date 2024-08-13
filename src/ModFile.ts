@@ -1,4 +1,6 @@
 import { HashTypes } from "@src/hash/HashTypes";
+import { existFile, hashFile, downloadFile } from "@src/utils/fileUtils";
+import path from "path";
 
 /**
  * Normalized representation of a mod file.
@@ -19,11 +21,38 @@ export class ModFile {
         this.url = url;
     }   
 
-    public update(
+    public async update(
         modDir: string,
         checkHash: boolean = false, 
-    ) {
-        // TODO
+    ): Promise<void> {
+        const filePath = path.join(modDir, this.filename);
+        var needToDownload = false;
+    
+        try {
+            // Check if the file exists
+            const fileExist = await existFile(filePath);
+            
+            if (fileExist) {
+                if (checkHash) {
+                    // Check that the files are the same via their hashes
+                    const currentFileHash = await hashFile(filePath, this.hashType);
+                    if (currentFileHash !== this.hash) {
+                        needToDownload = true;
+                    }
+                }
+            } else {
+                needToDownload = true;
+            }
+
+            if(!needToDownload) {
+                return;
+            }          
+            
+            // Download file
+            await downloadFile(filePath, this.url);
+        } catch (error) {
+            console.error('Error during file update:', error);
+        }
     }
 
     public toString(): string {
