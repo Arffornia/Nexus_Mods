@@ -122,3 +122,38 @@ export function deleteFileIfExists(filePath: string): boolean {
         return false;
     }
 }
+
+/**
+ * Returns a list of all file names with extensions in a given directory.
+ *
+ * @param {string} directoryPath - The path to the directory to search in.
+ * @param {boolean} recursive - Whether to search for files recursively in subdirectories.
+ * @returns {string[]} A list of file names with their extensions.
+ */
+export function listFilesInDirectory(directoryPath: string, recursive: boolean = false): string[] {
+    let fileList: string[] = [];
+
+    /**
+     * Internal function to process the directory and gather file names.
+     * @param {string} dir - The current directory being processed.
+     */
+    function processDirectory(dir: string): void {
+        const filesAndDirs = fs.readdirSync(dir);
+
+        for (const entry of filesAndDirs) {
+            const fullPath = path.join(dir, entry);
+            const stat = fs.statSync(fullPath);
+
+            if (stat.isDirectory()) {
+                if (recursive) {
+                    processDirectory(fullPath);
+                }
+            } else {
+                fileList.push(entry);
+            }
+        }
+    }
+
+    processDirectory(directoryPath);
+    return fileList;
+}
