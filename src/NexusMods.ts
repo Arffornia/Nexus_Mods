@@ -1,5 +1,7 @@
 import { ModFile } from "@src/ModFile";
 import { createFolderIfNotExist, listFilesInDirectory, deleteFileIfExists } from "./utils/fileUtils";
+import { CurseforgeAPI } from "./api/CurseforgeAPI";
+import { ModrinthAPI } from "./api/ModrinthAPI";
 
 import * as fs from 'fs';
 import path from "path";
@@ -58,4 +60,41 @@ export class NexusMods {
             console.error('Error during mods update:', error);
         }
     }
+
+    public async loadModsFromJson(jsonString: string): Promise<void> {
+        try {
+            const parsedJson = JSON.parse(jsonString);
+
+            const curseforgeMods = parsedJson.mods.curseforge || [];
+            const modrinthMods = parsedJson.mods.modrinth || [];
+
+            const curseforgeApi = new CurseforgeAPI();
+            const modrinthApi = new ModrinthAPI();
+
+            // Process CurseForge mods
+            for (const mod of curseforgeMods) {
+                try {
+                    const modFile = await curseforgeApi.getModFile(mod.projectId, mod.fileId);
+                    this.addModFile(modFile);
+                } catch (error) {
+                    console.error(`Failed to load CurseForge mod ${mod.displayName}:`, error);
+                }
+            }
+
+            // Process Modrinth mods
+            for (const mod of modrinthMods) {
+                try {
+                    const modFile = await modrinthApi.getModFile(mod.versionId);
+                    this.addModFile(modFile);
+                } catch (error) {
+                    console.error(`Failed to load Modrinth mod ${mod.displayName}:`, error);
+                }
+            }
+
+            console.log("Mods loaded from JSON successfully.");
+        } catch (error) {
+            console.error("Failed to load mods from JSON:", error);
+        }
+    }
+
 }

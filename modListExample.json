@@ -1,0 +1,22 @@
+{
+    "mods": {
+        "curseforge": [
+            {
+                "displayName": "Mekanism",
+                "projectId": "268560",
+                "fileId": "4776410"
+            },
+            {
+                "displayName": "Ender IO",
+                "projectId": "64578",
+                "fileId": "5460093"
+            }
+        ],
+        "modrinth": [
+            {
+                "displayName": "Applied Energistics 2",
+                "versionId": "kF3whRqC"
+            }
+        ]
+    }
+}
