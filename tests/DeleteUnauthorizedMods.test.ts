@@ -6,8 +6,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { listFilesInDirectory, createFolderIfNotExist, deleteFileIfExists } from "@src/utils/fileUtils";
 
-describe("Deleting unauthorized mods", () => {
-    const modsDir = path.join("./.minecraft", "unauthorizedModsTest");
+describe("Deleting unregistered mods", () => {
+    const modsDir = path.join("./.minecraft", "unregisteredModsTest");
 
     // Create ModFile instances for valid mods
     const validMods = [
@@ -32,15 +32,15 @@ describe("Deleting unauthorized mods", () => {
         // Create mods directory
         createFolderIfNotExist(modsDir);
 
-        // Add some unauthorized files
-        const unauthorizedMods = [
-            "unauthorizedMod1.jar",
-            "unauthorizedMod2.jar"
+        // Add some unregistered files
+        const unregisteredMods = [
+            "unregisteredMod1.jar",
+            "unregisteredMod2.jar"
         ];
 
-        unauthorizedMods.forEach((file) => {
-            const unauthorizedFilePath = path.join(modsDir, file);
-            fs.writeFileSync(unauthorizedFilePath, "dummy content");
+        unregisteredMods.forEach((file) => {
+            const unregisteredFilePath = path.join(modsDir, file);
+            fs.writeFileSync(unregisteredFilePath, "dummy content");
         });
 
         // Add valid mod files
@@ -54,13 +54,13 @@ describe("Deleting unauthorized mods", () => {
         fs.rmSync(modsDir, { recursive: true, force: true });
     });
 
-    it("Should delete unauthorized mods and keep only the valid mods", async () => {                
+    it("Should delete unregistered mods and keep only the valid mods", async () => {                
         const nexusMods = new NexusMods(modsDir);
 
         // Add valid mods to the manager
         validMods.forEach(modFile => nexusMods.addModFile(modFile));
 
-        // Perform the update, expecting unauthorized mods to be deleted
+        // Perform the update, expecting unregistered mods to be deleted
         await nexusMods.updateMods(true, true);
 
         // List the remaining files in the mods directory
@@ -70,7 +70,7 @@ describe("Deleting unauthorized mods", () => {
         expect(remainingMods).toHaveLength(validMods.length);
         expect(remainingMods).toContain(validMods[0].getFileName());
         expect(remainingMods).toContain(validMods[1].getFileName());
-        expect(remainingMods).not.toContain("unauthorizedMod1.jar");
-        expect(remainingMods).not.toContain("unauthorizedMod2.jar");
+        expect(remainingMods).not.toContain("unregisteredMod1.jar");
+        expect(remainingMods).not.toContain("unregisteredMod2.jar");
     }, 60 * 1000); 
 });

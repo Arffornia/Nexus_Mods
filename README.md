@@ -97,9 +97,9 @@ Once you have loaded the mods into a NexusMods instance, you can download/update
 
 ```typescript 
 const checkHash = true; // Compare files by hash. On false, it's like a forced download.
-const deleteUnauthorizedMods = true; // Delete unauthorized mods from the mod folder.
+const deleteUnregisteredMods = true; // Delete unregistered mods from the mod folder.
 
-await nexusMods.updateMods(true, true);
+await nexusMods.updateMods(checkHash, deleteUnregisteredMods);
 ```
 
 <br>

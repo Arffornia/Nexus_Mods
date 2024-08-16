@@ -20,7 +20,7 @@ export class NexusMods {
 
     public async updateMods(
         checkHash: boolean = false, 
-        deleteUnauthorizedMods: boolean = false
+        deleteUnregisteredMods: boolean = false
     ): Promise<void> {
         try {
             // Create folder if not exist
@@ -49,10 +49,10 @@ export class NexusMods {
                 }
             }));
 
-            if(deleteUnauthorizedMods) {
-                // Delete unauthorized mods
+            if(deleteUnregisteredMods) {
+                // Delete unregistered mods
                 presentMods.forEach(modName => {
-                    console.log(`Unauthorized mod: ${modName}`);
+                    console.log(`unregistered mod: ${modName}`);
                     deleteFileIfExists(path.join(this.modDir, modName));
                 });
             }
