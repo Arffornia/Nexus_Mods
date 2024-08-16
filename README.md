@@ -53,7 +53,7 @@ then just call loadModsFromJson to load the mods in NexusMods :
 await nexusMods.loadModsFromJson(jsonModList);
 ```
 
-You can also load the json file using an url (Coming soon) :
+You can also load the json file using an url :
 
 ```typescript
 await nexusMods.loadModsFromJsonUrl(jsonUrlModList);

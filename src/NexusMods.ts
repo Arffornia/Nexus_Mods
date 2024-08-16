@@ -3,8 +3,8 @@ import { createFolderIfNotExist, listFilesInDirectory, deleteFileIfExists } from
 import { CurseforgeAPI } from "./api/CurseforgeAPI";
 import { ModrinthAPI } from "./api/ModrinthAPI";
 
-import * as fs from 'fs';
 import path from "path";
+import axios from 'axios';
 
 export class NexusMods {
     private modDir: string;
@@ -61,6 +61,13 @@ export class NexusMods {
         }
     }
 
+    /**
+    * This method will parse the JSON string (see modListExample.json) and load mods in a NexusMods instance.
+    *
+    * @param {string} jsonString - A JSON string representing the mods to be managed.
+    * @returns {Promise<void>} A promise that resolves when all mod files have been successfully loaded and added.
+    * @throws {Error} If the JSON parsing fails or if there is an error during the mod file retrieval process.
+    */
     public async loadModsFromJson(jsonString: string): Promise<void> {
         try {
             const parsedJson = JSON.parse(jsonString);
@@ -97,4 +104,28 @@ export class NexusMods {
         }
     }
 
+    /**
+     * This method fetches a JSON file from the provided URL and load mods in a NexusMods instance, using `loadModsFromJson`.
+     *
+     * @param {string} url - The URL from which to fetch the JSON file containing the mod information.
+     * @returns {Promise<void>} A promise that resolves when all mod files have been successfully loaded and added.
+     * @throws {Error} If the HTTP request fails, if the JSON format is invalid, or if there is an error during the mod file retrieval process.
+     */
+    public async loadModsFromJsonUrl(url: string): Promise<void> {
+        try {
+            const response = await axios.get(url);
+            const jsonData = response.data;
+
+            if (typeof jsonData === 'string') {
+                await this.loadModsFromJson(jsonData);
+            } else if (typeof jsonData === 'object') {
+                await this.loadModsFromJson(JSON.stringify(jsonData));
+            } else {
+                throw new Error("Invalid JSON format from URL");
+            }
+        } catch (error) {
+            console.error(`Failed to load mods from URL ${url}:`, error);
+            throw error;
+        }
+    }
 }
