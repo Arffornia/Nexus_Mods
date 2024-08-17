@@ -20,26 +20,35 @@ export class NexusMods {
 
     public async updateMods(
         checkHash: boolean = false, 
-        deleteUnregisteredMods: boolean = false
+        deleteUnregisteredMods: boolean = false,
+        onProgress?: (currentModIndex: number, totalMods: number, currentModDisplayName: string) => void
     ): Promise<void> {
         try {
             // Create folder if not exist
             if (createFolderIfNotExist(this.modDir)) {
                 console.log(`Mods directory ${this.modDir} created successfully.`);
             }
-
-            // List all mods presents in the mods folder
+    
+            // List all mods present in the mods folder
             const presentMods = listFilesInDirectory(this.modDir, false);
             console.log(`List of detected files: ${presentMods}`);
     
-            // Update all mods
-            await Promise.all(this.modFiles.map(async (modFile) => {
-                try {
-                    await modFile.update(this.modDir, checkHash);
+            const totalMods = this.modFiles.length;
 
+            // Update all mods
+            for (let i = 0; i < totalMods; i++) {
+                const modFile = this.modFiles[i];
+                try {
+                    // Trigger the progress callback
+                    if (onProgress) {
+                        onProgress(i + 1, totalMods, modFile.getFileName());
+                    }
+    
+                    await modFile.update(this.modDir, checkHash);
+    
                     // Remove current mod from the list
                     const index = presentMods.indexOf(modFile.getFileName());
-
+    
                     // If the mod is found in the list, remove it
                     if (index !== -1) {
                         presentMods.splice(index, 1);
@@ -47,9 +56,9 @@ export class NexusMods {
                 } catch (error) {
                     console.error(`Error updating mod file ${modFile.getFileName}:`, error);
                 }
-            }));
-
-            if(deleteUnregisteredMods) {
+            }
+    
+            if (deleteUnregisteredMods) {
                 // Delete unregistered mods
                 presentMods.forEach(modName => {
                     console.log(`unregistered mod: ${modName}`);
