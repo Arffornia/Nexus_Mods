@@ -4,7 +4,7 @@ import { CurseforgeAPI } from "./api/CurseforgeAPI";
 import { ModrinthAPI } from "./api/ModrinthAPI";
 
 import path from "path";
-import axios from 'axios';
+import axios from "axios";
 
 export class NexusMods {
     private modDir: string;
