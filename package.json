@@ -1,20 +1,27 @@
 {
-  "name": "nexus_mods",
-  "version": "1.0.0",
+  "name": "@the_gost_sniper/nexus_mods",
+  "author": "TheGostsniperfr",
+  "version": "1.0.4",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arffornia/Nexus_Mods.git"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
     "README.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "tsc && tsc-alias"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/node": "^22.2.0",
@@ -22,6 +29,7 @@
     "crypto": "^1.0.1",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.4",
+    "tsc-alias": "^1.8.10",
     "typescript": "^5.5.4"
   }
 }
