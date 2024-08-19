@@ -2,10 +2,17 @@
 
 This package allows you to manage the download and update Minecraft mods.
 
-## Included APIs
+## Included APIs :
 
 - CurseForge
 - Modrinth
+
+## Install : 
+
+To include Nexus Mods in your project, you can install it using npm:
+```bash
+npm i @arffornia/nexus_mods
+```
 
 ## Usage : 
 
