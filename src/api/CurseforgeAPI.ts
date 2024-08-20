@@ -21,7 +21,11 @@ export class CurseforgeAPI {
         const url = `${this.endpointURL}/mods/${projectId}/files/${fileId}`;
 
         try {
-            const rep = await axios.get(url);
+            const rep = await axios.get(url, {
+                headers: {
+                    'User-Agent': 'Arffornia/Nexus_Mods (arffornia@gmail.com)',
+                }
+            });
             const data = rep.data.data;
 
             const modFile: ModFile = new ModFile(

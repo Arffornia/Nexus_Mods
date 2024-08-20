@@ -122,7 +122,11 @@ export class NexusMods {
      */
     public async loadModsFromJsonUrl(url: string): Promise<void> {
         try {
-            const response = await axios.get(url);
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': 'Arffornia/Nexus_Mods (arffornia@gmail.com)',
+                }
+            });
             const jsonData = response.data;
 
             if (typeof jsonData === 'string') {

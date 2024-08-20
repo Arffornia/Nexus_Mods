@@ -20,7 +20,11 @@ export class ModrinthAPI {
         const url = `${this.endpointURL}/version/${versionId}`;
 
         try {
-            const rep = await axios.get(url);
+            const rep = await axios.get(url, {
+                headers: {
+                    'User-Agent': 'Arffornia/Nexus_Mods (arffornia@gmail.com)',
+                }
+            });
             const data = rep.data;
 
             const fileData = data.files[0];
