@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2024-12-08T12:40:47.074Z",
+  "files": [
+    {
+      "path": "dir1/test2",
+      "hash": "f95be4341eddb92dde5f14d045978f9a4ec6c1a6",
+      "override": true
+    },
+    {
+      "path": "dir1/test3",
+      "hash": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      "override": true
+    },
+    {
+      "path": "test.a",
+      "hash": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+      "override": true
+    }
+  ]
+}
