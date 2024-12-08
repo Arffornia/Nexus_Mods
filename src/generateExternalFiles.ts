@@ -9,7 +9,7 @@ interface FileInfo {
 }
 
 const STORAGE_DIR_PATH = path.join(__dirname, '..', 'externalFiles', 'storage');
-const INDEX_FILE_PATH = path.join(__dirname, '..','externalFiles', 'index.json');
+const INDEX_FILE_PATH = path.join(__dirname, '..', 'externalFiles', 'index.json');
 
 function calculateHash(filePath: string): string {
     const fileBuffer = fs.readFileSync(filePath);
@@ -37,15 +37,32 @@ function getFiles(dir: string, basePath: string = ''): FileInfo[] {
     return files;
 }
 
-function generateIndex() {
+function generateOrUpdateIndex() {
     const files = getFiles(STORAGE_DIR_PATH);
-    const index = {
+
+    let existingIndex: { generatedAt: string; files: FileInfo[] } = { generatedAt: '', files: [] };
+    if (fs.existsSync(INDEX_FILE_PATH)) {
+        const rawData = fs.readFileSync(INDEX_FILE_PATH, 'utf-8');
+        existingIndex = JSON.parse(rawData);
+    }
+
+    const updatedFiles: FileInfo[] = files.map(newFile => {
+        const existingFile = existingIndex.files.find(f => f.path === newFile.path);
+
+        if (existingFile) {
+            return { ...existingFile, hash: newFile.hash };
+        } else {
+            return newFile;
+        }
+    });
+
+    const updatedIndex = {
         generatedAt: new Date().toISOString(),
-        files,
+        files: updatedFiles,
     };
 
-    fs.writeFileSync(INDEX_FILE_PATH, JSON.stringify(index, null, 2), 'utf-8');
-    console.log('Success to generate file index at: ', INDEX_FILE_PATH);
+    fs.writeFileSync(INDEX_FILE_PATH, JSON.stringify(updatedIndex, null, 2), 'utf-8');
+    console.log('Index file updated at:', INDEX_FILE_PATH);
 }
 
-generateIndex();
+generateOrUpdateIndex();
