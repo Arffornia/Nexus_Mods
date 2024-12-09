@@ -1,3 +1,9 @@
+/**
+ *  Hash enum
+ *
+ * @export
+ * @enum {number}
+ */
 export enum HashTypes {
     NONE = "NONE",
     SHA256 = "SHA256",

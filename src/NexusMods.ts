@@ -6,6 +6,12 @@ import { ModrinthAPI } from "./api/ModrinthAPI";
 import path from "path";
 import axios from "axios";
 
+/**
+ * Main class of the NexuMods library
+ *
+ * @export
+ * @class NexusMods
+ */
 export class NexusMods {
     private modDir: string;
     private modFiles: ModFile[] = [];

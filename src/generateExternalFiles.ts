@@ -2,6 +2,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 
+/**
+ * File interface 
+ * @param path - Relatif path to the file (from storage dir)
+ * @param hash - SHA1 of the file
+ * @param override - Always rewrite the file when TRUE
+ *
+ * @interface FileInfo
+ */
 interface FileInfo {
     path: string;
     hash: string;
@@ -11,6 +19,12 @@ interface FileInfo {
 const STORAGE_DIR_PATH = path.join(__dirname, '..', 'externalFiles', 'storage');
 const INDEX_FILE_PATH = path.join(__dirname, '..', 'externalFiles', 'index.json');
 
+/**
+ * Simple hash func for the calculation of SHA1 on a file
+ *
+ * @param {string} filePath - path of the file to hash
+ * @return {*}  {string} Hash string of the file
+ */
 function calculateHash(filePath: string): string {
     const fileBuffer = fs.readFileSync(filePath);
     const hashSum = crypto.createHash('sha1');
@@ -18,6 +32,13 @@ function calculateHash(filePath: string): string {
     return hashSum.digest('hex');
 }
 
+/**
+ * Get all files recursively from a dir with a relative path.
+ *
+ * @param {string} dir source dir to list all files
+ * @param {string} [basePath=''] relarive basepath
+ * @return {*}  {FileInfo[]} List of founded files
+ */
 function getFiles(dir: string, basePath: string = ''): FileInfo[] {
     const files: FileInfo[] = [];
     const items = fs.readdirSync(dir);
@@ -37,6 +58,10 @@ function getFiles(dir: string, basePath: string = ''): FileInfo[] {
     return files;
 }
 
+/**
+ * Generate/Update the index.json file, saving the list of FileInfo
+ *
+ */
 function generateOrUpdateIndex() {
     const files = getFiles(STORAGE_DIR_PATH);
 
