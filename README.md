@@ -19,8 +19,12 @@ npm i @arffornia/nexus_mods
 First, you need to instantiate an instance of NexusMods :
 
 ```typescript
-const nexusMods = new NexusMods("Your Minecraft directory path ("./.minecraft")");
+const nexusMods = new NexusMods(
+    "Your Minecraft directory path ("./.minecraft")",
+    callback?
+);
 ```
+- You can also specify an optional callback function using the [Callback interface](./src/utils/Callback.ts).
 
 <br>
 

@@ -5,6 +5,7 @@ import { ModrinthAPI } from "./api/ModrinthAPI";
 
 import path from "path";
 import axios from "axios";
+import { Callback, Step } from "./utils/Callback";
 
 /**
  * Main class of the NexuMods library
@@ -15,9 +16,18 @@ import axios from "axios";
 export class NexusMods {
     private modDir: string;
     private modFiles: ModFile[] = [];
+    private callback: Callback | null;
 
-    constructor(modDir: string) {
+    /**
+     * Creates an instance of NexusMods.
+     * 
+     * @param {string} modDir
+     * @param {Callback} [callback]
+     * @memberof NexusMods
+     */
+    constructor(modDir: string, callback?: Callback) {
         this.modDir = modDir;
+        this.callback = callback;
     }
 
     public addModFile(modFile: ModFile): void {
@@ -27,17 +37,18 @@ export class NexusMods {
     public async updateMods(
         checkHash: boolean = false, 
         deleteUnregisteredMods: boolean = false,
-        onProgress?: (currentModIndex: number, totalMods: number, currentModDisplayName: string) => void
     ): Promise<void> {
         try {
             // Create folder if not exist
             if (createFolderIfNotExist(this.modDir)) {
                 console.log(`Mods directory ${this.modDir} created successfully.`);
             }
+            
+            this.callback?.onStep(Step.FETCHING)
     
             // List all mods present in the mods folder
             const presentMods = listFilesInDirectory(this.modDir, false);
-            console.log(`List of detected files: ${presentMods}`);
+            // console.log(`List of detected files: ${presentMods}`);
     
             const totalMods = this.modFiles.length;
 
@@ -46,9 +57,7 @@ export class NexusMods {
                 const modFile = this.modFiles[i];
                 try {
                     // Trigger the progress callback
-                    if (onProgress) {
-                        onProgress(i + 1, totalMods, modFile.getFileName());
-                    }
+                    this.callback?.onProgress(i + 1, totalMods, modFile.getFileName());
     
                     await modFile.update(this.modDir, checkHash);
     
@@ -71,6 +80,8 @@ export class NexusMods {
                     deleteFileIfExists(path.join(this.modDir, modName));
                 });
             }
+
+            this.callback?.onStep(Step.DONE);
         } catch (error) {
             console.error('Error during mods update:', error);
         }

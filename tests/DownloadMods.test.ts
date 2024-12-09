@@ -1,9 +1,10 @@
-import { ModFile } from "@src/ModFile";
-import { HashTypes } from "@src/hash/HashTypes";
-import { deleteFileIfExists, createFolderIfNotExist, hashFile } from "@src/utils/fileUtils";
-import { NexusMods } from "@src/NexusMods";
+import { ModFile } from "./../src/ModFile";
+import { HashTypes } from "./../src/hash/HashTypes";
+import { deleteFileIfExists, createFolderIfNotExist, hashFile } from "./../src/utils/fileUtils";
+import { NexusMods } from "./../src/NexusMods";
 
-import path = require("path");
+import path from "path";
+import { Callback } from "../src/utils/Callback";
 
 
 describe("Download Botania & Create using NexusMods", () => {
@@ -25,6 +26,16 @@ describe("Download Botania & Create using NexusMods", () => {
     const BotaniaFilePath = path.join(modsDir, BotaniaModFile.getFileName());
     const CreateFilePath = path.join(modsDir, CreateModFile.getFileName());
 
+    const callback: Callback = {
+        onStep(step) {
+            console.log(step);
+        },
+        onProgress(totalDownloaded, totalToDownload, name) {
+            console.log(`totalDownloaded: ${totalDownloaded} | totalToDownload: ${totalToDownload} | name: ${name}`);
+        },
+
+    };
+
     beforeAll(() => {
         deleteFileIfExists(BotaniaFilePath);
         deleteFileIfExists(CreateFilePath);
@@ -40,7 +51,7 @@ describe("Download Botania & Create using NexusMods", () => {
         createFolderIfNotExist(modsDir);
         
         try {
-            const nexusMods = new NexusMods(modsDir);
+            const nexusMods = new NexusMods(modsDir, callback);
             nexusMods.addModFile(BotaniaModFile);
             nexusMods.addModFile(CreateModFile);
 

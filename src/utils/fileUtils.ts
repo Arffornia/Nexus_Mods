@@ -38,7 +38,7 @@ export function hashFile(filePath: string, hashType: HashTypes): Promise<string>
  * @returns A promise that resolves when the file has been successfully downloaded.
  */
 export async function downloadFile(outputPath: string, url: string): Promise<void> {
-    console.log(`Downloading file from ${url} to ${outputPath}...`);
+    // console.log(`Downloading file from ${url} to ${outputPath}...`);
 
     try {
         const response = await axios({
@@ -53,11 +53,11 @@ export async function downloadFile(outputPath: string, url: string): Promise<voi
 
         return new Promise((resolve, reject) => {
             writer.on('finish', () => {
-                console.log('File download complete.');
+                // console.log('File download complete.');
                 resolve();
             });
             writer.on('error', (error) => {
-                console.error('Error writing file:', error);
+                // console.error('Error writing file:', error);
                 reject(error);
             });
         });
