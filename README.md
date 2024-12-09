@@ -1,6 +1,6 @@
 # Nexus mods
 
-This package allows you to manage the download and update Minecraft mods.
+This package allows you to manage the download and update Minecraft mods and external files.
 
 ## Included APIs :
 
@@ -50,7 +50,8 @@ Who can look like that :
                 "versionId": "kF3whRqC"
             }
         ]
-    }
+    },
+    "externalFilesIndexUrl": "https://raw.githubusercontent.com/Arffornia/Nexus_Mods/refs/heads/main/externalFiles/index.json"
 }
 ```
 
@@ -96,6 +97,11 @@ const versionId = 'kF3whRqC';
 const modFile = await modrinthAPI.getModFile(versionId);
 nexusMods.addModFile(modFile);
 ```
+
+#### Load External file (Coming soon) :
+You can also manage external files to download & update other file than mods (like config files).
+
+That method used an [`index.json`](./externalFiles/index.json) generated using [`generateExternalFiles.ts`](./src/generateExternalFiles.ts) script (You can also take a look to the [`generateExtIndex.yml`](./.github/workflows/generateExtIndex.yml) workflow)
 
 <br>
 
