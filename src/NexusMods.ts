@@ -3,9 +3,10 @@ import { createFolderIfNotExist, listFilesInDirectory, deleteFileIfExists } from
 import { CurseforgeAPI } from "./api/CurseforgeAPI";
 import { ModrinthAPI } from "./api/ModrinthAPI";
 
-import path from "path";
-import axios from "axios";
 import { Callback, Step } from "./utils/Callback";
+import { LoadJsonFromUrl as LoadJsonFromUrl } from "./utils/HttpUtils";
+import { HashTypes } from "./hash/HashTypes";
+import path from "path";
 
 /**
  * Main class of the NexuMods library
@@ -14,6 +15,7 @@ import { Callback, Step } from "./utils/Callback";
  * @class NexusMods
  */
 export class NexusMods {
+    private gameDir: string;
     private modDir: string;
     private modFiles: ModFile[] = [];
     private callback: Callback | null;
@@ -21,12 +23,13 @@ export class NexusMods {
     /**
      * Creates an instance of NexusMods.
      * 
-     * @param {string} modDir
+     * @param {string} gameDir
      * @param {Callback} [callback]
      * @memberof NexusMods
      */
-    constructor(modDir: string, callback?: Callback) {
-        this.modDir = modDir;
+    constructor(gameDir: string,  callback?: Callback) {
+        this.gameDir = gameDir;
+        this.modDir = path.join(gameDir, "mods");
         this.callback = callback;
     }
 
@@ -58,11 +61,12 @@ export class NexusMods {
                 try {
                     // Trigger the progress callback
                     this.callback?.onProgress(i + 1, totalMods, modFile.getFileName());
-    
-                    await modFile.update(this.modDir, checkHash);
-    
+                    
+
+                    await modFile.update(this.gameDir, checkHash);
+                    
                     // Remove current mod from the list
-                    const index = presentMods.indexOf(modFile.getFileName());
+                    const index = presentMods.indexOf(modFile.getFilePath());
     
                     // If the mod is found in the list, remove it
                     if (index !== -1) {
@@ -75,9 +79,10 @@ export class NexusMods {
     
             if (deleteUnregisteredMods) {
                 // Delete unregistered mods
-                presentMods.forEach(modName => {
-                    console.log(`unregistered mod: ${modName}`);
-                    deleteFileIfExists(path.join(this.modDir, modName));
+                presentMods.forEach(filePath => {
+                    const modPath = path.join(this.modDir, filePath);
+                    console.log(`Unregistered file: ${modPath}`);
+                    deleteFileIfExists(modPath);
                 });
             }
 
@@ -90,16 +95,17 @@ export class NexusMods {
     /**
     * This method will parse the JSON string (see modListExample.json) and load mods in a NexusMods instance.
     *
-    * @param {string} jsonString - A JSON string representing the mods to be managed.
+    * @param {string} jsonData - A JSON string representing the mods to be managed.
     * @returns {Promise<void>} A promise that resolves when all mod files have been successfully loaded and added.
     * @throws {Error} If the JSON parsing fails or if there is an error during the mod file retrieval process.
     */
-    public async loadModsFromJson(jsonString: string): Promise<void> {
+    public async loadModsFromJson(jsonData: string): Promise<void> {
         try {
-            const parsedJson = JSON.parse(jsonString);
+            const parsedJson = JSON.parse(jsonData);
 
             const curseforgeMods = parsedJson.mods.curseforge || [];
             const modrinthMods = parsedJson.mods.modrinth || [];
+            const externalFilesUrl = parsedJson.externalFilesIndexUrl || null;
 
             const curseforgeApi = new CurseforgeAPI();
             const modrinthApi = new ModrinthAPI();
@@ -124,38 +130,57 @@ export class NexusMods {
                 }
             }
 
+            // Process External Files
+            if (externalFilesUrl) {
+                await this.loadExternalFilesFromJsonUrl(externalFilesUrl);
+            }
+
             console.log("Mods loaded from JSON successfully.");
         } catch (error) {
             console.error("Failed to load mods from JSON:", error);
         }
     }
 
+    public async loadExternalFiles(baseUrl: string, jsonData: any): Promise<void> {
+        jsonData = JSON.parse(jsonData);
+        const externalFiles = jsonData.files || [];
+
+        for (const file of externalFiles) {
+            this.addModFile(new ModFile(
+                file.path, 
+                file.hash, 
+                HashTypes.SHA1, 
+                new URL(file.path, new URL("storage/", baseUrl).href).href
+            ));
+        }
+    }
+
     /**
-     * This method fetches a JSON file from the provided URL and load mods in a NexusMods instance, using `loadModsFromJson`.
+     * Load mods from a modlist.json url, using `loadModsFromJson`.
      *
      * @param {string} url - The URL from which to fetch the JSON file containing the mod information.
      * @returns {Promise<void>} A promise that resolves when all mod files have been successfully loaded and added.
-     * @throws {Error} If the HTTP request fails, if the JSON format is invalid, or if there is an error during the mod file retrieval process.
+     * 
+     * @memberof NexusMods
      */
     public async loadModsFromJsonUrl(url: string): Promise<void> {
-        try {
-            const response = await axios.get(url, {
-                headers: {
-                    'User-Agent': 'Arffornia/Nexus_Mods (arffornia@gmail.com)',
-                }
-            });
-            const jsonData = response.data;
+        this.loadModsFromJson(await LoadJsonFromUrl(url));
+    }
 
-            if (typeof jsonData === 'string') {
-                await this.loadModsFromJson(jsonData);
-            } else if (typeof jsonData === 'object') {
-                await this.loadModsFromJson(JSON.stringify(jsonData));
-            } else {
-                throw new Error("Invalid JSON format from URL");
-            }
-        } catch (error) {
-            console.error(`Failed to load mods from URL ${url}:`, error);
-            throw error;
+    /**
+     * Load external files from the reposotory url, using `loadExtFilesFromJson`.
+     *
+     * @param {string} url Repo url (listing external files metainfo)
+     * @return {*}  {Promise<void>}
+
+     * @memberof NexusMods
+     */
+    public async loadExternalFilesFromJsonUrl(baseUrl: string): Promise<void> {
+        if (!baseUrl.endsWith("/")) {
+            baseUrl += "/";
         }
+
+        const indexUrl = new URL("index.json", baseUrl).href;
+        this.loadExternalFiles(baseUrl, await LoadJsonFromUrl(indexUrl));
     }
 }

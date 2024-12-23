@@ -1,6 +1,8 @@
 import axios from 'axios';
+import path from 'path';
 import { ModFile } from '@src/ModFile';
 import { HashTypes } from '@src/hash/HashTypes';
+import { USER_AGENT } from "./../utils/HttpUtils";
 
 export class CurseforgeAPI {
     private endpointURL: string;
@@ -23,13 +25,13 @@ export class CurseforgeAPI {
         try {
             const rep = await axios.get(url, {
                 headers: {
-                    'User-Agent': 'Arffornia/Nexus_Mods (arffornia@gmail.com)',
+                    'User-Agent': USER_AGENT,
                 }
             });
             const data = rep.data.data;
 
             const modFile: ModFile = new ModFile(
-                data.fileName,
+                path.join("mods", data.fileName),
                 data.hashes[0].value,
                 this.convertHashType(data.hashes[0].algo),
                 data.downloadUrl

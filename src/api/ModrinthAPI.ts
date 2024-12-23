@@ -1,6 +1,8 @@
 import axios from 'axios';
+import path from 'path';
 import { ModFile } from '@src/ModFile';
 import { HashTypes } from '@src/hash/HashTypes';
+import { USER_AGENT } from "./../utils/HttpUtils";
 
 export class ModrinthAPI {
     private endpointURL: string;
@@ -22,7 +24,7 @@ export class ModrinthAPI {
         try {
             const rep = await axios.get(url, {
                 headers: {
-                    'User-Agent': 'Arffornia/Nexus_Mods (arffornia@gmail.com)',
+                    'User-Agent': USER_AGENT,
                 }
             });
             const data = rep.data;
@@ -30,7 +32,7 @@ export class ModrinthAPI {
             const fileData = data.files[0];
 
             const modFile: ModFile = new ModFile(
-                fileData.filename,
+                path.join("mods", fileData.filename),
                 fileData.hashes.sha1,
                 HashTypes.SHA1,
                 fileData.url

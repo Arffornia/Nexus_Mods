@@ -1,11 +1,11 @@
-import { NexusMods } from "@src/NexusMods";
-import { listFilesInDirectory, createFolderIfNotExist } from "@src/utils/fileUtils";
-import { ModFile } from "@src/ModFile";
-import { HashTypes } from "@src/hash/HashTypes";
+import { NexusMods } from "../src/NexusMods";
+import { listFilesInDirectory, createFolderIfNotExist } from "../src/utils/fileUtils";
+import { ModFile } from "../src/ModFile";
+import { HashTypes } from "../src/hash/HashTypes";
 
-import path = require("path");
+import path from "path";
 import * as fs from 'fs';
-import exp = require("constants");
+// import exp = require("constants");
 
 // Json Test 1
 describe("Download Mods from Json", () => {
@@ -32,27 +32,29 @@ describe("Download Mods from Json", () => {
                         "versionId": "kF3whRqC"
                     }
                 ]
-            }
+            },
+            "externalFilesIndexUrl": "https://raw.githubusercontent.com/Arffornia/Nexus_Mods/refs/heads/main/externalFiles/"
         }
     `;
 
-    const modsDir = path.join("./.minecraft", "modsFromJsonTest1");
+    const gameDir = path.join("./.minecraft", "modsFromJsonTest1");
+    const modsDir = path.join(gameDir, "mods");
 
     // Create mods directory
-     createFolderIfNotExist(modsDir);
+    createFolderIfNotExist(modsDir);
 
     afterAll(() => {
         // Cleanup: Delete the entire mods directory and its contents.
-        fs.rmSync(modsDir, { recursive: true, force: true });
+        fs.rmSync(gameDir, { recursive: true, force: true });
     });
 
     beforeAll(() => {
         // Cleanup: Delete the entire mods directory and its contents.
-        fs.rmSync(modsDir, { recursive: true, force: true });
+        fs.rmSync(gameDir, { recursive: true, force: true });
     })
 
     it("Should download AE2, Mekanism, EnderIO", async () => {     
-        const nexusMods = new NexusMods(modsDir);
+        const nexusMods = new NexusMods(gameDir);
         
         // Load mods list from the json file.
         await nexusMods.loadModsFromJson(jsonModList);
@@ -61,13 +63,16 @@ describe("Download Mods from Json", () => {
         await nexusMods.updateMods(true, true);
 
         // List the remaining files in the mods directory.
-        const remainingMods = listFilesInDirectory(modsDir, false);
+        const remainingMods = listFilesInDirectory(gameDir, true);
         
         // Verify that only the mods you specified have been downloaded.
         expect(remainingMods).toContain("EnderIO-1.20.1-6.1.2-beta-all.jar");
         expect(remainingMods).toContain("Mekanism-1.20.1-10.4.0.14.jar");
         expect(remainingMods).toContain("appliedenergistics2-forge-15.2.11.jar");
-        expect(remainingMods).toHaveLength(3);
+        expect(remainingMods).toContain("test2");
+        expect(remainingMods).toContain("test3");
+        expect(remainingMods).toContain("test.a");
+        expect(remainingMods).toHaveLength(6);
 
     }, 60 * 1000);
 });
@@ -101,11 +106,12 @@ describe("Download Mods from Json", () => {
         }
     `;
 
-    const modsDir = path.join("./.minecraft", "modsFromJsonTest2");
+    const gameDir = path.join("./.minecraft", "modsFromJsonTest2");
+    const modsDir = path.join(gameDir, "mods");
 
     beforeAll(async () => {
         // Cleanup: Delete the entire mods directory and its contents.
-        fs.rmSync(modsDir, { recursive: true, force: true });
+        fs.rmSync(gameDir, { recursive: true, force: true });
         
         // Create mods directory
         createFolderIfNotExist(modsDir);
@@ -122,11 +128,11 @@ describe("Download Mods from Json", () => {
 
     afterAll(() => {
         // Cleanup: Delete the entire mods directory and its contents.
-        fs.rmSync(modsDir, { recursive: true, force: true });        
+        fs.rmSync(gameDir, { recursive: true, force: true });        
     }, 60 * 1000);
 
     it("Should download AE2, Mekanism, EnderIO", async () => {     
-        const nexusMods = new NexusMods(modsDir);
+        const nexusMods = new NexusMods(gameDir);
         
         // Load mods list from the json file.
         await nexusMods.loadModsFromJson(jsonModList);

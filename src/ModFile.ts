@@ -1,5 +1,5 @@
 import { HashTypes } from "@src/hash/HashTypes";
-import { existFile, hashFile, downloadFile } from "@src/utils/fileUtils";
+import { existFile, hashFile, downloadFile, createFolderIfNotExist } from "@src/utils/fileUtils";
 import path from "path";
 
 /**
@@ -9,33 +9,36 @@ import path from "path";
  * @class ModFile
  */
 export class ModFile {
-    private filename: string;
+    private filePath: string;
     private hash: string;
     private hashType: HashTypes;
     private url: string;
 
-    constructor(filename: string, hash: string, hashType: HashTypes, url: string) {
-        this.filename = filename;
+    constructor(filePath: string, hash: string, hashType: HashTypes, url: string) {
+        this.filePath = filePath;
         this.hash = hash;
         this.hashType = hashType;
         this.url = url;
     }   
 
     public async update(
-        modDir: string,
+        basePath: string,
         checkHash: boolean = false, 
     ): Promise<void> {
-        const filePath = path.join(modDir, this.filename);
         var needToDownload = false;
     
         try {
+            const fullPath = path.join(basePath, this.filePath);
+            
+            createFolderIfNotExist(path.dirname(fullPath));
+
             // Check if the file exists
-            const fileExist = await existFile(filePath);
+            const fileExist = await existFile(fullPath);
             
             if (fileExist) {
                 if (checkHash) {
                     // Check that the files are the same via their hashes
-                    const currentFileHash = await hashFile(filePath, this.hashType);
+                    const currentFileHash = await hashFile(fullPath, this.hashType);
                     if (currentFileHash !== this.hash) {
                         needToDownload = true;
                     }
@@ -49,7 +52,7 @@ export class ModFile {
             }          
             
             // Download file
-            await downloadFile(filePath, this.url);
+            await downloadFile(fullPath, this.url);
         } catch (error) {
             console.error('Error during file update:', error);
         }
@@ -57,7 +60,7 @@ export class ModFile {
 
     public toString(): string {
         return `ModFile {
-            filename: ${this.filename},
+            filename: ${this.filePath},
             hash: ${this.hash},
             hashType: ${this.hashType},
             url: ${this.url}
@@ -65,7 +68,11 @@ export class ModFile {
     }
 
     public getFileName(): string {
-        return this.filename;
+        return path.basename(this.filePath);
+    }
+
+    public getFilePath(): string {
+        return this.filePath;
     }
 
     public getHash(): string {
