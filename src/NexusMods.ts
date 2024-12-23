@@ -66,7 +66,7 @@ export class NexusMods {
                     await modFile.update(this.gameDir, checkHash);
                     
                     // Remove current mod from the list
-                    const index = presentMods.indexOf(modFile.getFilePath());
+                    const index = presentMods.indexOf(modFile.getFileName());
     
                     // If the mod is found in the list, remove it
                     if (index !== -1) {
