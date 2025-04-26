@@ -13,13 +13,13 @@ describe("Deleting unregistered mods", () => {
     // Create ModFile instances for valid mods
     const validMods = [
         new ModFile(
-            "mods/appliedenergistics2-forge-15.2.11.jar",
+            path.normalize("mods/appliedenergistics2-forge-15.2.11.jar"),
             "16ab2c2ede29a5f2c749f6b0151b1de2cacc76ba",
             HashTypes.SHA1,
             "https://cdn.modrinth.com/data/XxWD5pD3/versions/kF3whRqC/appliedenergistics2-forge-15.2.11.jar"
         ),
         new ModFile(
-            "mods/Mekanism-1.20.1-10.4.8.43.jar",   
+            path.normalize("mods/Mekanism-1.20.1-10.4.8.43.jar"),   
             "15badf085388fbd8bcb7948310bfb3a1e39e1e7f",
             HashTypes.SHA1,
             "https://edge.forgecdn.net/files/5395/221/Mekanism-1.20.1-10.4.8.43.jar"
