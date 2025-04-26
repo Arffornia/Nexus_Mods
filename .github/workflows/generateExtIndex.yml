@@ -22,7 +22,7 @@ jobs:
         run: npm install
 
       - name: Generate index.json
-        run: npx ts-node src/generateExternalFiles.ts
+        run: npx ts-node generateIndex.ts
 
       - name: Commit and push changes
         run: |

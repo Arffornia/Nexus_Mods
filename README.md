@@ -71,6 +71,50 @@ You can also load the json file using an url :
 await nexusMods.loadModsFromJsonUrl(jsonUrlModList);
 ```
 
+### Loading External Files
+
+Nexus Mods can also manage **external files** using an index system, similar to how it handles mod files.  
+This is useful, for example, when you want to update configuration files or other resources alongside your mods.
+
+External files are listed inside an [`index.json`](./externalFiles/index.json), which contains metadata for each file (such as `path`, `hash`, etc.).
+
+There are two ways to load an external file index:
+
+- **From your mod list file**:  
+  Add the URL of the external index by using the `externalFilesIndexUrl` field.
+
+- **Programmatically**:  
+  You can load the external files manually in your code using one of these methods:
+
+```typescript
+await nexusMods.loadExternalFiles(jsonIndexFile);
+```
+*(where `jsonIndexFile` is a parsed JSON object)*
+
+or
+
+```typescript
+await nexusMods.loadExternalFilesFromJsonUrl(jsonIndexFileUrl);
+```
+*(where `jsonIndexFileUrl` is a URL pointing to a remote `index.json`)*
+
+### Generating an External File Index
+
+Nexus Mods provides a small utility to easily generate your [`index.json`](./externalFiles/index.json) file.
+
+Use the following method:
+
+```typescript
+await generateIndex(storageDir, outputFile);
+```
+
+- `storageDir`: Absolute path to the storage directory.
+- `outputFile`: the path where the generated [`index.json`](./externalFiles/index.json) will be saved.
+
+This will scan all files under `storageDir`, calculate their metadata (such as paths and hashes), and output a ready-to-use index file.
+
+[See an example](./generateIndex.ts)
+
 <br>
 
 #### Load from Curseforge API file :
@@ -102,11 +146,6 @@ const modFile = await modrinthAPI.getModFile(versionId);
 nexusMods.addModFile(modFile);
 ```
 
-#### Load External file (Coming soon) :
-You can also manage external files to download & update other file than mods (like config files).
-
-That method used an [`index.json`](./externalFiles/index.json) generated using [`generateExternalFiles.ts`](./src/generateExternalFiles.ts) script (You can also take a look to the [`generateExtIndex.yml`](./.github/workflows/generateExtIndex.yml) workflow)
-
 <br>
 
 #### Download / Update mods :
@@ -121,8 +160,15 @@ await nexusMods.updateMods(checkHash, deleteUnregisteredMods);
 
 <br>
 
-#### Progress details callback :
-Coming soon
+
+### Callbacks (Progress & Steps)
+
+Nexus Mods supports an optional **callback** system to track download and update progress.
+
+You can provide a `Callback` object when initializing `NexusMods`.  
+The callback allows you to monitor different steps and track download progress.
+
+You can take a look of the step enum & Callback interface [here](./src/utils/Callback.ts).
 
 ## Tests
 
@@ -137,6 +183,3 @@ npm test
 ## License
 
 This project is licensed under the MIT licence. You can consult the complete text of the licence in the file [LICENSE](LICENSE).
-
-
-

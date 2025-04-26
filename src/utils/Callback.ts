@@ -5,10 +5,11 @@ export enum Step {
 }
 
 export interface Callback {
-    onStep(step: Step): void;
+    onStep(step: Step): void; // Called when the library moves to a new step 
+
     onProgress(
-        totalDownloaded: number, 
-        totalToDownload: number, 
-        name: string
-    )
+        totalDownloaded: number, // Number of mods already downloaded
+        totalToDownload: number, // Total number of mods to download
+        name: string              // Name of the currently downloading mod
+    ): void;
 }

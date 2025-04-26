@@ -3,3 +3,4 @@ export * from './ModFile';
 export * from './api/CurseforgeAPI';
 export * from './api/ModrinthAPI';
 export * from './utils/HttpUtils';
+export * from './GenerateExternalFiles';

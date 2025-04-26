@@ -16,9 +16,6 @@ interface FileInfo {
     override: boolean;
 }
 
-const STORAGE_DIR_PATH = path.join(__dirname, '..', 'externalFiles', 'storage');
-const INDEX_FILE_PATH = path.join(__dirname, '..', 'externalFiles', 'index.json');
-
 /**
  * Simple hash func for the calculation of SHA1 on a file
  *
@@ -59,15 +56,17 @@ function getFiles(dir: string, basePath: string = ''): FileInfo[] {
 }
 
 /**
- * Generate/Update the index.json file, saving the list of FileInfo
+ * Generate or update an external file index.
  *
+ * @param storageDir Absolute path to the storage directory
+ * @param outputIndexFile Absolute path to the output index.json file
  */
-function generateOrUpdateIndex() {
-    const files = getFiles(STORAGE_DIR_PATH);
+export async function generateIndex(storageDir: string, outputIndexFile: string): Promise<void> {
+    const files = getFiles(storageDir);
 
     let existingIndex: { generatedAt: string; files: FileInfo[] } = { generatedAt: '', files: [] };
-    if (fs.existsSync(INDEX_FILE_PATH)) {
-        const rawData = fs.readFileSync(INDEX_FILE_PATH, 'utf-8');
+    if (fs.existsSync(outputIndexFile)) {
+        const rawData = fs.readFileSync(outputIndexFile, 'utf-8');
         existingIndex = JSON.parse(rawData);
     }
 
@@ -86,8 +85,6 @@ function generateOrUpdateIndex() {
         files: updatedFiles,
     };
 
-    fs.writeFileSync(INDEX_FILE_PATH, JSON.stringify(updatedIndex, null, 2), 'utf-8');
-    console.log('Index file updated at:', INDEX_FILE_PATH);
+    fs.writeFileSync(outputIndexFile, JSON.stringify(updatedIndex, null, 2), 'utf-8');
+    console.log('Index file updated at:', outputIndexFile);
 }
-
-generateOrUpdateIndex();
