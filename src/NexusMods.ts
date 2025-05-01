@@ -164,7 +164,7 @@ export class NexusMods {
      * @memberof NexusMods
      */
     public async loadModsFromJsonUrl(url: string): Promise<void> {
-        this.loadModsFromJson(await LoadJsonFromUrl(url));
+        await this.loadModsFromJson(await LoadJsonFromUrl(url));
     }
 
     /**

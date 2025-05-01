@@ -1,7 +1,7 @@
 {
   "name": "@arffornia/nexus_mods",
   "author": "TheGostsniperfr",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "repository": {
     "type": "git",
@@ -18,7 +18,8 @@
   },
   "scripts": {
     "test": "jest",
-    "build": "tsc && tsc-alias"
+    "build": "tsc && tsc-alias",
+    "deploy": "npm run build && npm publish --access public"
   },
   "keywords": [],
   "license": "MIT",
