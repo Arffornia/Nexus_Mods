@@ -23,13 +23,14 @@ export class NexusMods {
     /**
      * Creates an instance of NexusMods.
      * 
-     * @param {string} gameDir
+     * @param {string} gameDirPath
      * @param {Callback} [callback]
+     * @param {string} [modDirName="mods"] - The directory where mods will be stored, relative to the game directory.
      * @memberof NexusMods
      */
-    constructor(gameDir: string,  callback?: Callback) {
-        this.gameDir = gameDir;
-        this.modDir = path.join(gameDir, "mods");
+    constructor(gameDirPath: string, callback?: Callback, modDirName: string = "mods") {
+        this.gameDir = gameDirPath;
+        this.modDir = path.join(gameDirPath, modDirName);
         this.callback = callback;
     }
 

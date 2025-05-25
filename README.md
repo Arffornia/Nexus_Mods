@@ -22,6 +22,7 @@ First, you need to instantiate an instance of NexusMods :
 const nexusMods = new NexusMods(
     "Your Minecraft directory path ("./.minecraft")",
     callback?
+    modDirName, // default: mods
 );
 ```
 - You can also specify an optional callback function using the [Callback interface](./src/utils/Callback.ts).
