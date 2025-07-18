@@ -6,9 +6,17 @@ import { USER_AGENT } from "./../utils/HttpUtils";
 
 export class CurseforgeAPI {
     private endpointURL: string;
+    private modDir: string;
 
-    constructor() {
+    /**
+     * Creates an instance of Curseforge API.
+     * 
+     * @param {string} [modDirName="mods"] - The directory where mods will be stored, relative to the game directory.
+     * @memberof CurseforgeAPI
+     */
+    constructor(modDirName: string = "mods") {
         this.endpointURL = "https://api.curse.tools/v1/cf";
+        this.modDir = modDirName;
     }
 
     /**
@@ -31,7 +39,7 @@ export class CurseforgeAPI {
             const data = rep.data.data;
 
             const modFile: ModFile = new ModFile(
-                path.join("mods", data.fileName),
+                path.join(this.modDir, data.fileName),
                 data.hashes[0].value,
                 this.convertHashType(data.hashes[0].algo),
                 data.downloadUrl

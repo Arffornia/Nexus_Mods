@@ -108,8 +108,8 @@ export class NexusMods {
             const modrinthMods = parsedJson.mods.modrinth || [];
             const externalFilesUrl = parsedJson.externalFilesIndexUrl || null;
 
-            const curseforgeApi = new CurseforgeAPI();
-            const modrinthApi = new ModrinthAPI();
+            const curseforgeApi = new CurseforgeAPI(this.modDir);
+            const modrinthApi = new ModrinthAPI(this.modDir);
 
             // Process CurseForge mods
             for (const mod of curseforgeMods) {

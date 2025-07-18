@@ -6,9 +6,18 @@ import { USER_AGENT } from "./../utils/HttpUtils";
 
 export class ModrinthAPI {
     private endpointURL: string;
+    private modDir: string;
 
-    constructor() {
+    /**
+     * Creates an instance of Modrinth API.
+     * 
+     * @param {string} [modDirName="mods"] - The directory where mods will be stored, relative to the game directory.
+     * @memberof ModrinthAPI
+     */
+    constructor(modDirName: string = "mods") {
         this.endpointURL = "https://api.modrinth.com/v2";
+                this.modDir = modDirName;
+
     }
 
     /**
@@ -32,7 +41,7 @@ export class ModrinthAPI {
             const fileData = data.files[0];
 
             const modFile: ModFile = new ModFile(
-                path.join("mods", fileData.filename),
+                path.join(this.modDir, fileData.filename),
                 fileData.hashes.sha1,
                 HashTypes.SHA1,
                 fileData.url
