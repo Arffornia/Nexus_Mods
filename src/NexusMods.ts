@@ -16,6 +16,7 @@ import path from "path";
  */
 export class NexusMods {
     private gameDir: string;
+    private modDirName: string;
     private modDir: string;
     private modFiles: ModFile[] = [];
     private callback: Callback | null;
@@ -32,6 +33,7 @@ export class NexusMods {
         this.gameDir = gameDirPath;
         this.modDir = path.join(gameDirPath, modDirName);
         this.callback = callback;
+        this.modDirName = modDirName;
     }
 
     public addModFile(modFile: ModFile): void {
@@ -108,8 +110,8 @@ export class NexusMods {
             const modrinthMods = parsedJson.mods.modrinth || [];
             const externalFilesUrl = parsedJson.externalFilesIndexUrl || null;
 
-            const curseforgeApi = new CurseforgeAPI(this.modDir);
-            const modrinthApi = new ModrinthAPI(this.modDir);
+            const curseforgeApi = new CurseforgeAPI(this.modDirName);
+            const modrinthApi = new ModrinthAPI(this.modDirName);
 
             // Process CurseForge mods
             for (const mod of curseforgeMods) {
