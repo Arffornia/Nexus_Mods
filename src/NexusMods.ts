@@ -2,6 +2,7 @@ import { ModFile } from "@src/ModFile";
 import { createFolderIfNotExist, listFilesInDirectory, deleteFileIfExists } from "./utils/fileUtils";
 import { CurseforgeAPI } from "./api/CurseforgeAPI";
 import { ModrinthAPI } from "./api/ModrinthAPI";
+import { GithubAPI } from "./api/GithubAPI";
 
 import { Callback, Step } from "./utils/Callback";
 import { LoadJsonFromUrl as LoadJsonFromUrl } from "./utils/HttpUtils";
@@ -108,10 +109,12 @@ export class NexusMods {
 
             const curseforgeMods = parsedJson.mods.curseforge || [];
             const modrinthMods = parsedJson.mods.modrinth || [];
+            const githubMods = parsedJson.mods.github || [];
             const externalFilesUrl = parsedJson.externalFilesIndexUrl || null;
 
             const curseforgeApi = new CurseforgeAPI(this.modDirName);
             const modrinthApi = new ModrinthAPI(this.modDirName);
+            const githubApi = new GithubAPI(this.modDirName);
 
             // Process CurseForge mods
             for (const mod of curseforgeMods) {
@@ -130,6 +133,22 @@ export class NexusMods {
                     this.addModFile(modFile);
                 } catch (error) {
                     console.error(`Failed to load Modrinth mod ${mod.displayName}:`, error);
+                }
+            }
+
+            // Process GitHub mods
+            for (const mod of githubMods) {
+                try {
+                    const modFile = await githubApi.getModFile(
+                        mod.owner,
+                        mod.repoName,
+                        mod.groupId,
+                        mod.artifactId,
+                        mod.version
+                    );
+                    this.addModFile(modFile);
+                } catch (error) {
+                    console.error(`Failed to load GitHub mod ${mod.displayName}:`, error);
                 }
             }
 

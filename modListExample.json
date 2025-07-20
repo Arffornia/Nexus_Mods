@@ -17,6 +17,16 @@
                 "displayName": "Applied Energistics 2",
                 "versionId": "kF3whRqC"
             }
+        ],
+        "github": [
+            {
+                "displayName": "Arffornia Mod",
+                "owner": "Arffornia",
+                "repoName": "Arffornia_Mods",
+                "groupId": "fr.thegostsniperfr.arffornia",
+                "artifactId": "arffornia",
+                "version": "1.0.0"
+            }
         ]
     }
 }

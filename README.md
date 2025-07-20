@@ -6,6 +6,7 @@ This package allows you to manage the download and update Minecraft mods and ext
 
 - CurseForge
 - Modrinth
+- Github Registry
 
 ## Install : 
 
@@ -53,6 +54,16 @@ Who can look like that :
             {
                 "displayName": "Applied Energistics 2",
                 "versionId": "kF3whRqC"
+            }
+        ],
+        "github": [
+            {
+                "displayName": "Arffornia Mod",
+                "owner": "Arffornia",
+                "repoName": "Arffornia_Mods",
+                "groupId": "fr.thegostsniperfr.arffornia",
+                "artifactId": "arffornia",
+                "version": "1.0.0"
             }
         ]
     },
@@ -137,6 +148,28 @@ nexusMods.addModFile(modFile);
 #### Load from Modrinth API file :
 
 You can load a mod directly into the code using the Modrinth api:
+
+```typescript
+// Example to get Arffornia mod.
+const githubAPI = new GithubAPI();
+
+const owner = 'Arffornia';
+const repoName = 'Arffornia_Mods';
+const groupId = 'fr.thegostsniperfr.arffornia';
+const artifactId = 'arffornia';
+const version = '1.0.0';
+
+const modFile = await githubAPI.getModFile(owner, repoName, groupId, artifactId, version);
+nexusMods.addModFile(modFile);
+```
+
+<br>
+
+#### Load from Github Registry API file :
+
+You can also update file from Github Registry:
+
+> Registry must contain a fileName.sha1 hash file (checksum)
 
 ```typescript
 // Example to get Ender IO mod.
