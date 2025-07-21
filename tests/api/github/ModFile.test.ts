@@ -1,56 +1,48 @@
-import axios from 'axios';
-    import { GithubAPI } from '@src/api/GithubAPI';
-    import { HashTypes } from '@src/hash/HashTypes';
+import { ModFile } from "@src/ModFile";
+import { GithubReleasesAPI } from '@src/api/GithubReleasesAPI';
+import { HashTypes } from '@src/hash/HashTypes';
+import path from "path";
 
-    // Mock the axios module
-    jest.mock('axios');
-    const mockedAxios = axios as jest.Mocked<typeof axios>;
+describe('GithubReleasesAPI getModFile', () => {
+  it('Should return the ModFile of a Arffornia mod from github release', async () => {
+    const expected = new ModFile(
+        path.normalize("mods/arffornia-1.0.0.jar"),
+        "d4864b4489c424429836de80eb538a2155549192bb6a0ae5fbf64f488cf656b7",
+        HashTypes.SHA256,
+        "https://github.com/Arffornia/Arffornia_Mods/releases/download/v1.0.0/arffornia-1.0.0.jar"
+    );
 
-    describe('GithubAPI getModFile', () => {
-      beforeEach(() => {
-        // Clear mock history before each test
-        mockedAxios.get.mockClear();
-      });
 
-      it('should return a ModFile with a fetched SHA1 hash', async () => {
-        const githubAPI = new GithubAPI();
+    const githubAPI = new GithubReleasesAPI();
 
-        const owner = 'Arffornia';
-        const repoName = 'Arffornia_Mods';
-        const groupId = 'fr.thegostsniperfr.arffornia';
-        const artifactId = 'arffornia';
-        const version = '1.0.0';
+    const owner = 'Arffornia';
+    const repoName = 'Arffornia_Mods';
+    const tag = 'v1.0.0';
+    const assetName = "arffornia-1.0.0.jar";
 
-        const mockSha1Hash = 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2';
-        
-        // Mock the GET request to the .sha1 URL
-        mockedAxios.get.mockResolvedValue({ data: mockSha1Hash });
+    const result = await githubAPI.getModFile(owner, repoName, tag, assetName);
+    
+    expect(expected).toEqual(result);
+  });
+});
 
-        const result = await githubAPI.getModFile(owner, repoName, groupId, artifactId, version);
-        
-        const expectedJarUrl = `https://maven.pkg.github.com/${owner}/${repoName}/${groupId.replace(/\./g, '/')}/${artifactId}/${version}/${artifactId}-${version}.jar`;
+describe('GithubReleasesAPI getModFile', () => {
+  it('GithubReleasesAPI get ModFile with invalid tag', async () => {
+    const expected = new ModFile(
+        path.normalize("mods/arffornia-1.0.0.jar"),
+        "d4864b4489c424429836de80eb538a2155549192bb6a0ae5fbf64f488cf656b7",
+        HashTypes.SHA256,
+        "https://github.com/Arffornia/Arffornia_Mods/releases/download/v1.0.0/arffornia-1.0.0.jar"
+    );
 
-        // Verify that axios was called correctly
-        expect(mockedAxios.get).toHaveBeenCalledWith(
-          `${expectedJarUrl}.sha1`,
-          expect.any(Object)
-        );
 
-        // Assert the properties of the returned ModFile
-        expect(result.getFileName()).toBe('arffornia-1.0.0.jar');
-        expect(result.getHash()).toBe(mockSha1Hash);
-        expect(result.gethashType()).toBe(HashTypes.SHA1);
-        expect(result.getUrl()).toBe(expectedJarUrl);
-      });
+    const githubAPI = new GithubReleasesAPI();
 
-      it('should throw an error if the hash fetch request fails', async () => {
-        const githubAPI = new GithubAPI();
-        
-        // Mock a rejected promise to simulate a network error
-        mockedAxios.get.mockRejectedValue(new Error('Network error'));
+    const owner = 'Arffornia';
+    const repoName = 'Arffornia_Mods';
+    const tag = 'v0.invalid.0';
+    const assetName = "arffornia-1.0.0.jar";
 
-        await expect(githubAPI.getModFile('owner', 'repo', 'group', 'artifact', 'version'))
-            .rejects
-            .toThrow('Network error');
-      });
-    });
+    await expect(githubAPI.getModFile(owner, repoName, tag, assetName)).rejects.toThrow();
+  });
+});
