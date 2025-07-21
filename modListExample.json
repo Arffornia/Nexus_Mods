@@ -23,9 +23,8 @@
                 "displayName": "Arffornia Mod",
                 "owner": "Arffornia",
                 "repoName": "Arffornia_Mods",
-                "groupId": "fr.thegostsniperfr.arffornia",
-                "artifactId": "arffornia",
-                "version": "1.0.0"
+                "tag": "v1.0.0",
+                "assetName": "arffornia-1.0.0.jar"
             }
         ]
     }

@@ -109,7 +109,7 @@ export class NexusMods {
 
             const curseforgeMods = parsedJson.mods.curseforge || [];
             const modrinthMods = parsedJson.mods.modrinth || [];
-            const githubReleasesMods = parsedJson.mods.github || [];
+            const githubReleasesMods = parsedJson.mods['github-releases'] || [];
             const externalFilesUrl = parsedJson.externalFilesIndexUrl || null;
 
             const curseforgeApi = new CurseforgeAPI(this.modDirName);
