@@ -23,8 +23,8 @@
                 "displayName": "Arffornia Mod",
                 "owner": "Arffornia",
                 "repoName": "Arffornia_Mods",
-                "tag": "v1.0.0",
-                "assetName": "arffornia-1.0.0.jar"
+                "tag": "latest",
+                "assetName": "arffornia.jar"
             }
         ]
     }

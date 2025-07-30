@@ -6,10 +6,10 @@ import path from "path";
 describe('GithubReleasesAPI getModFile', () => {
   it('Should return the ModFile of a Arffornia mod from github release', async () => {
     const expected = new ModFile(
-        path.normalize("mods/arffornia-1.0.0.jar"),
-        "d4864b4489c424429836de80eb538a2155549192bb6a0ae5fbf64f488cf656b7",
+        path.normalize("mods/arffornia.jar"),
+        "958177d3b0ee08f4273ed449e95f413770667347a3b68769f6f92917bad41db3",
         HashTypes.SHA256,
-        "https://github.com/Arffornia/Arffornia_Mods/releases/download/v1.0.0/arffornia-1.0.0.jar"
+        "https://github.com/Arffornia/Arffornia_Mods/releases/download/v1.0.1/arffornia.jar"
     );
 
 
@@ -17,8 +17,8 @@ describe('GithubReleasesAPI getModFile', () => {
 
     const owner = 'Arffornia';
     const repoName = 'Arffornia_Mods';
-    const tag = 'v1.0.0';
-    const assetName = "arffornia-1.0.0.jar";
+    const tag = 'latest';
+    const assetName = "arffornia.jar";
 
     const result = await githubAPI.getModFile(owner, repoName, tag, assetName);
     
@@ -29,10 +29,10 @@ describe('GithubReleasesAPI getModFile', () => {
 describe('GithubReleasesAPI getModFile', () => {
   it('GithubReleasesAPI get ModFile with invalid tag', async () => {
     const expected = new ModFile(
-        path.normalize("mods/arffornia-1.0.0.jar"),
-        "d4864b4489c424429836de80eb538a2155549192bb6a0ae5fbf64f488cf656b7",
+        path.normalize("mods/arffornia.jar"),
+        "958177d3b0ee08f4273ed449e95f413770667347a3b68769f6f92917bad41db3",
         HashTypes.SHA256,
-        "https://github.com/Arffornia/Arffornia_Mods/releases/download/v1.0.0/arffornia-1.0.0.jar"
+        "https://github.com/Arffornia/Arffornia_Mods/releases/download/v1.0.0/arffornia.jar"
     );
 
 
@@ -41,7 +41,7 @@ describe('GithubReleasesAPI getModFile', () => {
     const owner = 'Arffornia';
     const repoName = 'Arffornia_Mods';
     const tag = 'v0.invalid.0';
-    const assetName = "arffornia-1.0.0.jar";
+    const assetName = "arffornia.jar";
 
     await expect(githubAPI.getModFile(owner, repoName, tag, assetName)).rejects.toThrow();
   });
