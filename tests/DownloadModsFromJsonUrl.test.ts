@@ -7,7 +7,7 @@ import * as fs from 'fs';
 // Json Test 1
 describe("Download Mods from Json URL", () => {
 
-    const jsonModListUrl = "https://raw.githubusercontent.com/Arffornia/Arffornia_Network/refs/heads/main/config/server/modList.json";
+    const jsonModListUrl = "https://raw.githubusercontent.com/Arffornia/Arffornia_Provisioning/d098a30b100711659a8289dcb2e20ad948f27050/config/server/modList.json";
 
     const gameDir = path.join("./.minecraft42");
 

@@ -7,9 +7,9 @@ describe('GithubReleasesAPI getModFile', () => {
   it('Should return the ModFile of a Arffornia mod from github release', async () => {
     const expected = new ModFile(
         path.normalize("mods/arffornia.jar"),
-        "958177d3b0ee08f4273ed449e95f413770667347a3b68769f6f92917bad41db3",
+        "dc8d9c8a553689d55c6ec6254aa0cec54f03bc9432ee4e2e5a487e3c9c1c96e1",
         HashTypes.SHA256,
-        "https://github.com/Arffornia/Arffornia_Mods/releases/download/v1.0.1/arffornia.jar"
+        "https://github.com/Arffornia/Arffornia_Mods/releases/download/v1.0.6/arffornia.jar"
     );
 
 
@@ -17,7 +17,7 @@ describe('GithubReleasesAPI getModFile', () => {
 
     const owner = 'Arffornia';
     const repoName = 'Arffornia_Mods';
-    const tag = 'latest';
+    const tag = 'v1.0.6';
     const assetName = "arffornia.jar";
 
     const result = await githubAPI.getModFile(owner, repoName, tag, assetName);

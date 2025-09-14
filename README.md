@@ -196,6 +196,50 @@ await nexusMods.updateMods(checkHash, deleteUnregisteredMods);
 
 <br>
 
+### Advanced: Dynamic File Renaming with Environment Variables
+
+Nexus Mods supports dynamic file renaming using environment variables. This is useful for cases where file names need to be configured externally, for instance, in a CI/CD environment or for different deployment targets.
+
+This feature is controlled by the following environment variables:
+
+-   `NM_REPLACE_ENV_VARIABLES`: A boolean (`true` or `false`) that enables or disables the feature. **Default: `false`**.
+-   `NM_REPLACE_ENV_VARIABLE_PREFIX`: A string that defines the prefix for the environment variables to be replaced. **Default: `"NM_"`**.
+
+When enabled, any file path provided to a `ModFile` constructor will be scanned for placeholders in the format `${PREFIX_...}`. If a matching environment variable is found, the placeholder is replaced with its value.
+
+> Note: This renaming process is applied at the core ModFile level, meaning it works seamlessly for all mods and files, whether they are loaded from a JSON mod list or fetched directly from APIs (CurseForge, Modrinth, GitHub Releases).
+
+#### Example
+
+Suppose you have a configuration file that you want to rename based on the environment.
+
+**1. Set your environment variables:**
+
+```bash
+export NM_REPLACE_ENV_VARIABLES=true
+export NM_CONFIG_FILE_NAME="production_settings"
+```
+
+**2. Define the file path with a placeholder:**
+
+In your mod list JSON or when creating a `ModFile` programmatically, use a placeholder for the part of the filename you want to replace.
+
+For an external file, your `index.json` might look like this:
+
+```json
+{
+  "path": "config/${NM_CONFIG_FILE_NAME}.properties",
+  "hash": "...",
+  "override": true
+}
+```
+
+**3. Result:**
+
+When Nexus Mods processes this file, it will resolve the path to `config/production_settings.properties` before downloading or updating it. If the `NM_CONFIG_FILE_NAME` environment variable was not set, the path would remain `config/${NM_CONFIG_FILE_NAME}.properties`.
+
+<br>
+
 
 ### Callbacks (Progress & Steps)
 

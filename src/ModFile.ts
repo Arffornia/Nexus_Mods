@@ -1,6 +1,7 @@
 import { HashTypes } from "@src/hash/HashTypes";
 import { existFile, hashFile, downloadFile, createFolderIfNotExist } from "@src/utils/fileUtils";
 import path from "path";
+import { resolvePathFromEnv } from "./utils/envUtils";
 
 /**
  * Normalized representation of a mod file.
@@ -15,7 +16,7 @@ export class ModFile {
     private url: string;
 
     constructor(filePath: string, hash: string, hashType: HashTypes, url: string) {
-        this.filePath = filePath;
+        this.filePath = resolvePathFromEnv(filePath);
         this.hash = hash;
         this.hashType = hashType;
         this.url = url;
