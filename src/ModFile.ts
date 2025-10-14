@@ -26,29 +26,29 @@ export class ModFile {
         basePath: string,
         checkHash: boolean = false, 
     ): Promise<void> {
-        var needToDownload = false;
+        let needToDownload = false;
     
         try {
             const fullPath = path.join(basePath, this.filePath);
             
             createFolderIfNotExist(path.dirname(fullPath));
 
-            // Check if the file exists
             const fileExist = await existFile(fullPath);
             
-            if (fileExist) {
-                if (checkHash) {
-                    // Check that the files are the same via their hashes
+            if (!fileExist) {
+                needToDownload = true;
+            } else {
+                if (this.hashType === HashTypes.NONE) {
+                    needToDownload = true;
+                } else if (checkHash) {
                     const currentFileHash = await hashFile(fullPath, this.hashType);
                     if (currentFileHash !== this.hash) {
                         needToDownload = true;
                     }
                 }
-            } else {
-                needToDownload = true;
             }
 
-            if(!needToDownload) {
+            if (!needToDownload) {
                 return;
             }          
             

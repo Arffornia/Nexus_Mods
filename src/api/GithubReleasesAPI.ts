@@ -7,7 +7,7 @@ import { USER_AGENT } from './../utils/HttpUtils';
 interface ReleaseAsset {
     name: string;
     browser_download_url: string;
-    digest: string;
+    digest: string | null;
 }
 
 export class GithubReleasesAPI {
@@ -47,16 +47,21 @@ export class GithubReleasesAPI {
                 throw new Error(`Asset '${assetName}' not found in release '${tag}'.`);
             }
 
-            const digestParts = mainAsset.digest.split(':');
-            if (digestParts.length < 2 || digestParts[0] !== 'sha256') {
-                throw new Error(`Unsupported digest format from API: ${mainAsset.digest}`);
+            let hash = '';
+            let hashType = HashTypes.NONE;
+
+            if (mainAsset.digest && typeof mainAsset.digest === 'string') {
+                const digestParts = mainAsset.digest.split(':');
+                if (digestParts.length >= 2 && digestParts[0] === 'sha256') {
+                    hash = digestParts[1];
+                    hashType = HashTypes.SHA256;
+                }
             }
-            const hash = digestParts[1];
 
             return new ModFile(
                 path.join(this.modDir, mainAsset.name),
                 hash,
-                HashTypes.SHA256,
+                hashType,
                 mainAsset.browser_download_url
             );
 
