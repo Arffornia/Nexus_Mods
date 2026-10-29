@@ -1,7 +1,7 @@
-import { NexusMods } from "../src/NexusMods";
-import { listFilesInDirectory, createFolderIfNotExist } from "../src/utils/fileUtils";
-import { ModFile } from "../src/ModFile";
-import { HashTypes } from "../src/hash/HashTypes";
+import { NexusMods } from "@src/NexusMods";
+import { listFilesInDirectory, createFolderIfNotExist } from "@src/utils/fileUtils";
+import { ModFile } from "@src/ModFile";
+import { HashTypes } from "@src/hash/HashTypes";
 
 import path from "path";
 import * as fs from 'fs';

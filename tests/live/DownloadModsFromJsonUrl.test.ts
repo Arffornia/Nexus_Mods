@@ -1,6 +1,6 @@
 import path from "path";
-import { NexusMods } from "../src/NexusMods";
-import { listFilesInDirectory, createFolderIfNotExist } from "../src/utils/fileUtils";
+import { NexusMods } from "@src/NexusMods";
+import { listFilesInDirectory, createFolderIfNotExist } from "@src/utils/fileUtils";
 
 import * as fs from 'fs';
 

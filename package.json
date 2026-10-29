@@ -2,7 +2,7 @@
   "name": "@arffornia/nexus_mods",
   "author": "TheGostsniperfr",
   "version": "1.0.12",
-  "description": "",
+  "description": "Minecraft mod and file sync library (CurseForge, Modrinth, GitHub Releases, external file index) used by the Arffornia launcher and config-updater.",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Arffornia/Nexus_Mods.git"
@@ -18,6 +18,8 @@
   },
   "scripts": {
     "test": "jest",
+    "test:live": "jest --config jest.live.config.js --runInBand",
+    "typecheck": "tsc --noEmit -p .",
     "build": "tsc && tsc-alias",
     "deploy": "npm run build && npm publish --access public"
   },
@@ -31,5 +33,12 @@
     "ts-jest": "29.4.1",
     "tsc-alias": "1.8.16",
     "typescript": "5.9.2"
+  },
+  "bugs": {
+    "url": "https://github.com/Arffornia/Nexus_Mods/issues"
+  },
+  "homepage": "https://github.com/Arffornia/Nexus_Mods#readme",
+  "engines": {
+    "node": ">=20"
   }
 }

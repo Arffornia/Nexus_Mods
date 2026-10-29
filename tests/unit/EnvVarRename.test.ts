@@ -1,5 +1,5 @@
-import { ModFile } from '../src/ModFile';
-import { HashTypes } from '../src/hash/HashTypes';
+import { ModFile } from '@src/ModFile';
+import { HashTypes } from '@src/hash/HashTypes';
 import * as path from 'path';
 
 describe('Environment Variable File Renaming', () => {
