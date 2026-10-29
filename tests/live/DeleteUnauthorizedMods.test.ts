@@ -1,10 +1,10 @@
-import { ModFile } from "../src/ModFile";
-import { NexusMods } from "../src/NexusMods";
-import { CurseforgeAPI } from "../src/api/CurseforgeAPI";
-import { HashTypes } from "../src/hash/HashTypes";
+import { ModFile } from "@src/ModFile";
+import { NexusMods } from "@src/NexusMods";
+import { CurseforgeAPI } from "@src/api/CurseforgeAPI";
+import { HashTypes } from "@src/hash/HashTypes";
 import * as path from 'path';
 import * as fs from 'fs';
-import { listFilesInDirectory, createFolderIfNotExist, deleteFileIfExists } from "../src/utils/fileUtils";
+import { listFilesInDirectory, createFolderIfNotExist, deleteFileIfExists } from "@src/utils/fileUtils";
 
 describe("Deleting unregistered mods", () => {
     const gameDir = path.join("./.minecraft", "unregisteredModsTest");
