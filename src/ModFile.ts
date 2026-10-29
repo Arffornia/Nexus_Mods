@@ -22,41 +22,62 @@ export class ModFile {
         this.url = url;
     }   
 
+    /**
+     * Download the file when it is missing or (with `checkHash`) when its hash differs.
+     * Errors are logged and swallowed; use `sync()` to get them.
+     *
+     * @deprecated Prefer `sync()`, which reports errors. Kept for backward compatibility.
+     */
     public async update(
         basePath: string,
         checkHash: boolean = false, 
     ): Promise<void> {
-        let needToDownload = false;
-    
         try {
-            const fullPath = path.join(basePath, this.filePath);
-            
-            createFolderIfNotExist(path.dirname(fullPath));
-
-            const fileExist = await existFile(fullPath);
-            
-            if (!fileExist) {
-                needToDownload = true;
-            } else {
-                if (this.hashType === HashTypes.NONE) {
-                    needToDownload = true;
-                } else if (checkHash) {
-                    const currentFileHash = await hashFile(fullPath, this.hashType);
-                    if (currentFileHash !== this.hash) {
-                        needToDownload = true;
-                    }
-                }
-            }
-
-            if (!needToDownload) {
-                return;
-            }          
-            
-            // Download file
-            await downloadFile(fullPath, this.url);
+            await this.sync(basePath, checkHash);
         } catch (error) {
             console.error('Error during file update:', error);
         }
+    }
+
+    /**
+     * Download the file when it is missing or (with `checkHash`) when its hash differs.
+     *
+     * @param basePath - Game / install directory the file path is relative to.
+     * @param checkHash - Compare the hash of an existing file and re-download on mismatch.
+     * @returns `"downloaded"` or `"upToDate"`.
+     * @throws If the file cannot be checked, downloaded or written.
+     */
+    public async sync(
+        basePath: string,
+        checkHash: boolean = false,
+    ): Promise<"downloaded" | "upToDate"> {
+        let needToDownload = false;
+
+        const fullPath = path.join(basePath, this.filePath);
+
+        createFolderIfNotExist(path.dirname(fullPath));
+
+        const fileExist = await existFile(fullPath);
+
+        if (!fileExist) {
+            needToDownload = true;
+        } else {
+            if (this.hashType === HashTypes.NONE) {
+                needToDownload = true;
+            } else if (checkHash) {
+                const currentFileHash = await hashFile(fullPath, this.hashType);
+                if (currentFileHash !== this.hash) {
+                    needToDownload = true;
+                }
+            }
+        }
+
+        if (!needToDownload) {
+            return "upToDate";
+        }
+
+        await downloadFile(fullPath, this.url);
+        return "downloaded";
     }
 
     public toString(): string {
@@ -108,4 +129,4 @@ export function getHashTypeFromStr(hashType: string): HashTypes {
         default:
             return HashTypes.NONE;
     }
-}
+}

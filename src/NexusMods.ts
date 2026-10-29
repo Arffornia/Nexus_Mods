@@ -8,6 +8,13 @@ import { Callback, Step } from "./utils/Callback";
 import { LoadJsonFromUrl as LoadJsonFromUrl } from "./utils/HttpUtils";
 import { HashTypes } from "./hash/HashTypes";
 import path from "path";
+import {
+    UpdateFailure,
+    UpdateOptions,
+    UpdateResult,
+    NexusModsUpdateError,
+    errorMessage,
+} from "./UpdateResult";
 
 /**
  * Main class of the NexuMods library
@@ -21,6 +28,7 @@ export class NexusMods {
     private modDir: string;
     private modFiles: ModFile[] = [];
     private callback: Callback | null;
+    private loadFailures: UpdateFailure[] = [];
 
     /**
      * Creates an instance of NexusMods.
@@ -41,10 +49,43 @@ export class NexusMods {
         this.modFiles.push(modFile);
     }
 
+    /**
+     * Failures recorded while loading mod lists / indexes (lookups that could not be resolved).
+     * They are included in the result of `updateMods`.
+     */
+    public getLoadFailures(): UpdateFailure[] {
+        return [...this.loadFailures];
+    }
+
+    /**
+     * Download or update every registered file, then optionally delete unregistered files
+     * from the mod directory.
+     *
+     * Safety rules:
+     * - A file whose download failed is never deleted (its old copy is kept).
+     * - If any mod list entry could not be resolved, unregistered-file deletion is skipped
+     *   entirely, because the full list of wanted mods is unknown (`deletionSkipped: true`).
+     *
+     * @param checkHash - Compare existing files by hash and re-download on mismatch.
+     * @param deleteUnregisteredMods - Delete files in the mod directory that are not registered.
+     * @param options - `throwOnFailure: true` rejects with `NexusModsUpdateError` on any failure.
+     * @returns An `UpdateResult`. Callers that ignore it keep the previous behaviour
+     *          (failures are logged, no exception).
+     */
     public async updateMods(
         checkHash: boolean = false, 
         deleteUnregisteredMods: boolean = false,
-    ): Promise<void> {
+        options: UpdateOptions = {},
+    ): Promise<UpdateResult> {
+        const result: UpdateResult = {
+            ok: true,
+            downloaded: [],
+            upToDate: [],
+            deleted: [],
+            deletionSkipped: false,
+            failures: [...this.loadFailures],
+        };
+
         try {
             // Create folder if not exist
             if (createFolderIfNotExist(this.modDir)) {
@@ -55,45 +96,80 @@ export class NexusMods {
     
             // List all mods present in the mods folder
             const presentMods = listFilesInDirectory(this.modDir, false);
-            // console.log(`List of detected files: ${presentMods}`);
     
             const totalMods = this.modFiles.length;
 
             // Update all mods
             for (let i = 0; i < totalMods; i++) {
                 const modFile = this.modFiles[i];
+
+                // A registered file is never "unregistered", whether its update succeeds or not.
+                const index = presentMods.indexOf(modFile.getFileName());
+                if (index !== -1) {
+                    presentMods.splice(index, 1);
+                }
+
                 try {
                     // Trigger the progress callback
                     this.callback?.onProgress(i + 1, totalMods, modFile.getFileName());
-                    
 
-                    await modFile.update(this.gameDir, checkHash);
-                    
-                    // Remove current mod from the list
-                    const index = presentMods.indexOf(modFile.getFileName());
-    
-                    // If the mod is found in the list, remove it
-                    if (index !== -1) {
-                        presentMods.splice(index, 1);
+                    const status = await modFile.sync(this.gameDir, checkHash);
+                    if (status === "downloaded") {
+                        result.downloaded.push(modFile.getFilePath());
+                    } else {
+                        result.upToDate.push(modFile.getFilePath());
                     }
                 } catch (error) {
-                    console.error(`Error updating mod file ${modFile.getFileName}:`, error);
+                    console.error(`Error updating mod file ${modFile.getFileName()}:`, error);
+                    result.failures.push({
+                        stage: "download",
+                        name: modFile.getFilePath(),
+                        error: errorMessage(error),
+                    });
                 }
             }
     
             if (deleteUnregisteredMods) {
-                // Delete unregistered mods
-                presentMods.forEach(filePath => {
-                    const modPath = path.join(this.modDir, filePath);
-                    console.log(`Unregistered file: ${modPath}`);
-                    deleteFileIfExists(modPath);
-                });
+                if (this.loadFailures.length > 0) {
+                    result.deletionSkipped = true;
+                    console.warn(
+                        `Skipping deletion of unregistered mods: ${this.loadFailures.length} mod list ` +
+                        `entr${this.loadFailures.length === 1 ? "y" : "ies"} could not be resolved.`
+                    );
+                } else {
+                    // Delete unregistered mods
+                    presentMods.forEach(fileName => {
+                        const modPath = path.join(this.modDir, fileName);
+                        console.log(`Unregistered file: ${modPath}`);
+                        if (deleteFileIfExists(modPath)) {
+                            result.deleted.push(fileName);
+                        } else {
+                            result.failures.push({
+                                stage: "update",
+                                name: fileName,
+                                error: `Could not delete unregistered file ${modPath}`,
+                            });
+                        }
+                    });
+                }
             }
 
             this.callback?.onStep(Step.DONE);
         } catch (error) {
             console.error('Error during mods update:', error);
+            result.failures.push({ stage: "update", name: this.modDir, error: errorMessage(error) });
         }
+
+        result.ok = result.failures.length === 0;
+
+        if (!result.ok) {
+            console.error(`${result.failures.length} mod file(s) failed to update.`);
+            if (options.throwOnFailure) {
+                throw new NexusModsUpdateError(result);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -123,6 +199,11 @@ export class NexusMods {
                     this.addModFile(modFile);
                 } catch (error) {
                     console.error(`Failed to load CurseForge mod ${mod.displayName}:`, error);
+                    this.loadFailures.push({
+                        stage: "lookup",
+                        name: `curseforge: ${mod.displayName}`,
+                        error: errorMessage(error),
+                    });
                 }
             }
 
@@ -133,6 +214,11 @@ export class NexusMods {
                     this.addModFile(modFile);
                 } catch (error) {
                     console.error(`Failed to load Modrinth mod ${mod.displayName}:`, error);
+                    this.loadFailures.push({
+                        stage: "lookup",
+                        name: `modrinth: ${mod.displayName}`,
+                        error: errorMessage(error),
+                    });
                 }
             }
 
@@ -148,6 +234,11 @@ export class NexusMods {
                     this.addModFile(modFile);
                 } catch (error) {
                     console.error(`Failed to load GitHub Release mod ${mod.displayName}:`, error);
+                    this.loadFailures.push({
+                        stage: "lookup",
+                        name: `github-releases: ${mod.displayName}`,
+                        error: errorMessage(error),
+                    });
                 }
             }
 
@@ -159,6 +250,7 @@ export class NexusMods {
             console.log("Mods loaded from JSON successfully.");
         } catch (error) {
             console.error("Failed to load mods from JSON:", error);
+            this.loadFailures.push({ stage: "load", name: "mod list", error: errorMessage(error) });
         }
     }
 
@@ -202,6 +294,6 @@ export class NexusMods {
         }
 
         const indexUrl = new URL("index.json", baseUrl).href;
-        this.loadExternalFiles(baseUrl, await LoadJsonFromUrl(indexUrl));
+        await this.loadExternalFiles(baseUrl, await LoadJsonFromUrl(indexUrl));
     }
 }
