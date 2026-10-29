@@ -7,3 +7,4 @@ export * from './utils/HttpUtils';
 export * from './utils/envUtils';
 export * from './GenerateExternalFiles';
 export * from './UpdateResult';
+export { configureHttp, resetHttpOptions, getHttpOptions, HttpOptions } from './utils/HttpClient';

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { withRetry, getHttpOptions } from "./HttpClient";
 
 export const USER_AGENT = 'Arffornia/Nexus_Mods (arffornia@gmail.com)';
 
@@ -10,11 +11,12 @@ export const USER_AGENT = 'Arffornia/Nexus_Mods (arffornia@gmail.com)';
  */
 export async function GetJsonFromUrl(url: string): Promise<string> {
     try {
-        const response = await axios.get(url, {
+        const response = await withRetry(() => axios.get(url, {
             headers: {
                 'User-Agent': USER_AGENT,
-            }
-        });
+            },
+            timeout: getHttpOptions().timeoutMs,
+        }), url);
 
         return response.data;
 
