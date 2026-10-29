@@ -4,6 +4,7 @@ import { ModFile } from '@src/ModFile';
 import { assertPlainFileName } from '@src/utils/fileUtils';
 import { HashTypes } from '@src/hash/HashTypes';
 import { USER_AGENT } from "./../utils/HttpUtils";
+import { withRetry, getHttpOptions } from "./../utils/HttpClient";
 
 export class CurseforgeAPI {
     private endpointURL: string;
@@ -32,11 +33,12 @@ export class CurseforgeAPI {
         const url = `${this.endpointURL}/mods/${projectId}/files/${fileId}`;
 
         try {
-            const rep = await axios.get(url, {
+            const rep = await withRetry(() => axios.get(url, {
                 headers: {
                     'User-Agent': USER_AGENT,
-                }
-            });
+                },
+                timeout: getHttpOptions().timeoutMs,
+            }), `CurseForge ${url}`);
             const data = rep.data.data;
 
             const modFile: ModFile = new ModFile(

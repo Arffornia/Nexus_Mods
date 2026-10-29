@@ -5,6 +5,8 @@ import * as path from 'path';
 import { pipeline } from 'stream/promises';
 
 import { HashTypes } from '../hash/HashTypes';
+import { withRetry, getHttpOptions } from './HttpClient';
+import { USER_AGENT } from './HttpUtils';
 
 /**
  * Hashes a file using the specified hash algorithm from HashTypes enum.
@@ -51,6 +53,15 @@ export async function downloadFile(
     expectedHash?: string,
     hashType: HashTypes = HashTypes.NONE,
 ): Promise<void> {
+    await withRetry(() => downloadOnce(outputPath, url, expectedHash, hashType), `download ${url}`);
+}
+
+async function downloadOnce(
+    outputPath: string,
+    url: string,
+    expectedHash: string | undefined,
+    hashType: HashTypes,
+): Promise<void> {
     const tempPath = `${outputPath}.${crypto.randomBytes(6).toString('hex')}.part`;
 
     try {
@@ -58,6 +69,8 @@ export async function downloadFile(
             url: url,
             method: 'GET',
             responseType: 'stream',
+            headers: { 'User-Agent': USER_AGENT },
+            timeout: getHttpOptions().timeoutMs,
         });
 
         await pipeline(response.data, fs.createWriteStream(tempPath));
@@ -74,7 +87,7 @@ export async function downloadFile(
         await fs.promises.rename(tempPath, outputPath);
     } catch (err) {
         await fs.promises.rm(tempPath, { force: true }).catch(() => undefined);
-        console.error('Error in downloadFile:', err);
+        console.error(`Error downloading ${url}:`, (err as Error)?.message ?? err);
         throw err;
     }
 }
