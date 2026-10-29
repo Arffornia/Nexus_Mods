@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { pipeline } from 'stream/promises';
 
 import { HashTypes } from '../hash/HashTypes';
 
@@ -32,13 +33,25 @@ export function hashFile(filePath: string, hashType: HashTypes): Promise<string>
 
 /**
  * Downloads a file from the specified URL and saves it to the output path.
- * 
+ *
+ * The body is written to a temporary file next to `outputPath`. When `expectedHash` is given
+ * (and `hashType` is not NONE) the temporary file is hashed and compared first. Only then is it
+ * renamed over `outputPath`, so a failed, truncated or mismatching download never replaces an
+ * existing file. The temporary file is removed on any error.
+ *
  * @param outputPath - The path where the downloaded file will be saved.
  * @param url - The URL from which to download the file.
- * @returns A promise that resolves when the file has been successfully downloaded.
+ * @param expectedHash - Optional expected hex digest of the downloaded file.
+ * @param hashType - Hash algorithm of `expectedHash`.
+ * @returns A promise that resolves when the file has been downloaded, verified and moved in place.
  */
-export async function downloadFile(outputPath: string, url: string): Promise<void> {
-    // console.log(`Downloading file from ${url} to ${outputPath}...`);
+export async function downloadFile(
+    outputPath: string,
+    url: string,
+    expectedHash?: string,
+    hashType: HashTypes = HashTypes.NONE,
+): Promise<void> {
+    const tempPath = `${outputPath}.${crypto.randomBytes(6).toString('hex')}.part`;
 
     try {
         const response = await axios({
@@ -47,26 +60,69 @@ export async function downloadFile(outputPath: string, url: string): Promise<voi
             responseType: 'stream',
         });
 
-        const writer = fs.createWriteStream(outputPath);
+        await pipeline(response.data, fs.createWriteStream(tempPath));
 
-        response.data.pipe(writer);
+        if (expectedHash && hashType !== HashTypes.NONE) {
+            const actualHash = await hashFile(tempPath, hashType);
+            if (actualHash.toLowerCase() !== expectedHash.toLowerCase()) {
+                throw new Error(
+                    `Hash mismatch for ${url}: expected ${hashType} ${expectedHash}, got ${actualHash}`
+                );
+            }
+        }
 
-        return new Promise((resolve, reject) => {
-            writer.on('finish', () => {
-                // console.log('File download complete.');
-                resolve();
-            });
-            writer.on('error', (error) => {
-                // console.error('Error writing file:', error);
-                reject(error);
-            });
-        });
+        await fs.promises.rename(tempPath, outputPath);
     } catch (err) {
+        await fs.promises.rm(tempPath, { force: true }).catch(() => undefined);
         console.error('Error in downloadFile:', err);
         throw err;
     }
 }
 
+/**
+ * Resolves `relativePath` against `baseDir` and checks that the result stays inside `baseDir`.
+ *
+ * @param baseDir - Base directory (e.g. the game directory).
+ * @param relativePath - Path relative to the base directory.
+ * @returns The absolute resolved path.
+ * @throws If the path is absolute or resolves outside `baseDir`.
+ */
+export function resolveInside(baseDir: string, relativePath: string): string {
+    if (path.isAbsolute(relativePath) || path.win32.isAbsolute(relativePath)) {
+        throw new Error(`Refusing absolute path: ${relativePath}`);
+    }
+
+    const base = path.resolve(baseDir);
+    const target = path.resolve(base, relativePath);
+    const rel = path.relative(base, target);
+
+    if (rel === '' || rel.startsWith('..') || path.isAbsolute(rel)) {
+        throw new Error(`Refusing path outside of ${base}: ${relativePath}`);
+    }
+
+    return target;
+}
+
+/**
+ * Checks that a file name coming from a remote API is a plain file name
+ * (no directory separators, not `.` or `..`).
+ *
+ * @param fileName - File name to check.
+ * @returns The same file name.
+ * @throws If the file name is not a plain file name.
+ */
+export function assertPlainFileName(fileName: string): string {
+    if (
+        typeof fileName !== 'string' ||
+        fileName.length === 0 ||
+        fileName === '.' ||
+        fileName === '..' ||
+        /[\\/\0]/.test(fileName)
+    ) {
+        throw new Error(`Invalid file name: ${JSON.stringify(fileName)}`);
+    }
+    return fileName;
+}
 
 /**
  * Checks if a file exists at the specified file path.

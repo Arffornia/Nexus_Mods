@@ -1,6 +1,7 @@
 import axios from 'axios';
 import path from 'path';
 import { ModFile } from '@src/ModFile';
+import { assertPlainFileName } from '@src/utils/fileUtils';
 import { HashTypes } from '@src/hash/HashTypes';
 import { USER_AGENT } from "./../utils/HttpUtils";
 
@@ -39,7 +40,7 @@ export class CurseforgeAPI {
             const data = rep.data.data;
 
             const modFile: ModFile = new ModFile(
-                path.join(this.modDir, data.fileName),
+                path.join(this.modDir, assertPlainFileName(data.fileName)),
                 data.hashes[0].value,
                 this.convertHashType(data.hashes[0].algo),
                 data.downloadUrl

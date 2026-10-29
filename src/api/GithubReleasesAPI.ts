@@ -1,6 +1,7 @@
 import axios from 'axios';
 import path from 'path';
 import { ModFile } from '@src/ModFile';
+import { assertPlainFileName } from '@src/utils/fileUtils';
 import { HashTypes } from '@src/hash/HashTypes';
 import { USER_AGENT } from './../utils/HttpUtils';
 
@@ -59,7 +60,7 @@ export class GithubReleasesAPI {
             }
 
             return new ModFile(
-                path.join(this.modDir, mainAsset.name),
+                path.join(this.modDir, assertPlainFileName(mainAsset.name)),
                 hash,
                 hashType,
                 mainAsset.browser_download_url
