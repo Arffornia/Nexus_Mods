@@ -1,5 +1,5 @@
 import { HashTypes } from "@src/hash/HashTypes";
-import { existFile, hashFile, downloadFile, createFolderIfNotExist } from "@src/utils/fileUtils";
+import { existFile, hashFile, downloadFile, createFolderIfNotExist, resolveInside } from "@src/utils/fileUtils";
 import path from "path";
 import { resolvePathFromEnv } from "./utils/envUtils";
 
@@ -53,7 +53,8 @@ export class ModFile {
     ): Promise<"downloaded" | "upToDate"> {
         let needToDownload = false;
 
-        const fullPath = path.join(basePath, this.filePath);
+        // Throws when the path is absolute or escapes basePath: nothing is written.
+        const fullPath = resolveInside(basePath, this.filePath);
 
         createFolderIfNotExist(path.dirname(fullPath));
 
@@ -76,7 +77,7 @@ export class ModFile {
             return "upToDate";
         }
 
-        await downloadFile(fullPath, this.url);
+        await downloadFile(fullPath, this.url, this.hash, this.hashType);
         return "downloaded";
     }
 
