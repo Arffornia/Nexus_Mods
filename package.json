@@ -32,7 +32,7 @@
     "nock": "14.0.17",
     "ts-jest": "29.4.1",
     "tsc-alias": "1.8.16",
-    "typescript": "5.9.2"
+    "typescript": "7.0.2"
   },
   "bugs": {
     "url": "https://github.com/Arffornia/Nexus_Mods/issues"
