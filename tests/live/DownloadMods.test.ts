@@ -4,7 +4,7 @@ import { deleteFileIfExists, createFolderIfNotExist, hashFile } from "./../src/u
 import { NexusMods } from "./../src/NexusMods";
 
 import path from "path";
-import { Callback } from "../src/utils/Callback";
+import { Callback } from "@src/utils/Callback";
 
 
 describe("Download Botania & Create using NexusMods", () => {
