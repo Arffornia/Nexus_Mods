@@ -31,8 +31,36 @@ await nexusMods.loadExternalFilesFromJsonUrl("https://example.com/config/server/
 
 const checkHash = true;              // compare existing files by hash; false = only download missing files
 const deleteUnregisteredMods = true; // delete files in mods/ that are not in the list
-await nexusMods.updateMods(checkHash, deleteUnregisteredMods);
+const result = await nexusMods.updateMods(checkHash, deleteUnregisteredMods);
+if (!result.ok) {
+    console.error(result.failures); // [{ stage: "lookup" | "download" | "load" | "update", name, error }]
+    process.exit(1);
+}
 ```
+
+### Update result and failures (since 1.1.0)
+`updateMods` resolves to an `UpdateResult`:
+
+| Field | Meaning |
+|---|---|
+| `ok` | `true` when nothing failed |
+| `downloaded` / `upToDate` | relative paths downloaded in this run / already valid |
+| `deleted` | unregistered file names removed from the mod directory |
+| `deletionSkipped` | `true` when deletion was requested but skipped (see below) |
+| `failures` | every failed lookup (recorded while loading lists) and download |
+
+Safety rules:
+- A file whose download failed is never deleted; the previous copy stays in place.
+- If any mod list entry could not be resolved, **no** unregistered file is deleted, because the full
+  list of wanted mods is unknown.
+
+By default `updateMods` does not throw (backward compatible with 1.0.x, where it returned `void`).
+Pass `{ throwOnFailure: true }` as the third argument to reject with a `NexusModsUpdateError`
+(its `result` property holds the `UpdateResult`). `getLoadFailures()` returns the lookup failures
+recorded so far.
+
+`ModFile.sync(basePath, checkHash)` is the throwing variant of `ModFile.update()` and returns
+`"downloaded"` or `"upToDate"`.
 
 ### Mod list format
 See [modListExample.json](./modListExample.json).

@@ -5,5 +5,6 @@ const base = require("./jest.config.js");
 module.exports = {
     ...base,
     testMatch: ["<rootDir>/tests/live/**/*.test.ts"],
+    setupFilesAfterEnv: [],
     testTimeout: 120000,
 };
