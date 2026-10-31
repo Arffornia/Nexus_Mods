@@ -116,9 +116,17 @@ make build       # dist/
 ```
 
 ## Release process
-1. Bump `version` in `package.json` (semver; this package is consumed by the launcher and the config-updater).
-2. Merge to `main`, then from a clean checkout: `npm run deploy` (build + `npm publish --access public`).
-3. Bump the dependency in consumers (Arffornia_Provisioning, Arffornia_Launcher).
+1. Bump `version` in `package.json` (semver; this package is consumed by the launcher and the config-updater)
+   in a PR (`npm version <x.y.z> --no-git-tag-version` also updates the lockfile), merge it.
+2. Tag the merge commit on `main` and push the tag: `git tag v<x.y.z> && git push origin v<x.y.z>`.
+3. `.github/workflows/publish.yml` checks that the tag matches `package.json`, runs `make check` and runs
+   `npm publish --provenance`. No token: it uses npm **trusted publishing** (the workflow proves who it is to
+   npm with a short-lived GitHub OIDC identity; nothing is stored, nothing to rotate).
+4. Bump the dependency in consumers (Arffornia_Provisioning, Arffornia_Launcher).
+
+One-time setup on npmjs.com (owner): open https://www.npmjs.com/package/@arffornia/nexus_mods/access ,
+section **Trusted Publisher** > **GitHub Actions**, and enter: organization or user `Arffornia`, repository
+`Nexus_Mods`, workflow filename `publish.yml`, environment empty. `npm run deploy` stays as a manual fallback.
 
 ## License
 MIT, see [LICENSE](LICENSE).
