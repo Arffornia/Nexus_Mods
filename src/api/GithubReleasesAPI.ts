@@ -4,6 +4,7 @@ import { ModFile } from '@src/ModFile';
 import { assertPlainFileName } from '@src/utils/fileUtils';
 import { HashTypes } from '@src/hash/HashTypes';
 import { USER_AGENT } from './../utils/HttpUtils';
+import { withRetry, getHttpOptions } from './../utils/HttpClient';
 
 interface ReleaseAsset {
     name: string;
@@ -40,7 +41,10 @@ export class GithubReleasesAPI {
         }
 
         try {
-            const releaseResponse = await axios.get(releaseUrl, { headers: { 'User-Agent': USER_AGENT } });
+            const releaseResponse = await withRetry(() => axios.get(releaseUrl, {
+                headers: { 'User-Agent': USER_AGENT },
+                timeout: getHttpOptions().timeoutMs,
+            }), `GitHub ${releaseUrl}`);
             const assets: ReleaseAsset[] = releaseResponse.data.assets;
 
             const mainAsset = assets.find(asset => asset.name === assetName);

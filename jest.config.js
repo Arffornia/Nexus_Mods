@@ -5,6 +5,7 @@ module.exports = {
     testEnvironment: "node",
     testMatch: ["<rootDir>/tests/unit/**/*.test.ts"],
     setupFilesAfterEnv: ["<rootDir>/tests/unit/setup.ts"],
+    testTimeout: 15000,
     moduleNameMapper: {
         '^@src/(.*)$': '<rootDir>/src/$1',
         '^@gameDir/(.*)$': '<rootDir>/.minecraft/$1',

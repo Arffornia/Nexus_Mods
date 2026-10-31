@@ -4,6 +4,7 @@ import { ModFile } from '@src/ModFile';
 import { assertPlainFileName } from '@src/utils/fileUtils';
 import { HashTypes } from '@src/hash/HashTypes';
 import { USER_AGENT } from "./../utils/HttpUtils";
+import { withRetry, getHttpOptions } from "./../utils/HttpClient";
 
 export class ModrinthAPI {
     private endpointURL: string;
@@ -32,11 +33,12 @@ export class ModrinthAPI {
         const url = `${this.endpointURL}/version/${versionId}`;
 
         try {
-            const rep = await axios.get(url, {
+            const rep = await withRetry(() => axios.get(url, {
                 headers: {
                     'User-Agent': USER_AGENT,
-                }
-            });
+                },
+                timeout: getHttpOptions().timeoutMs,
+            }), `Modrinth ${url}`);
             const data = rep.data;
 
             const fileData = data.files[0];

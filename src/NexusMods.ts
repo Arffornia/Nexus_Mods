@@ -8,6 +8,22 @@ import { Callback, Step } from "./utils/Callback";
 import { LoadJsonFromUrl as LoadJsonFromUrl } from "./utils/HttpUtils";
 import { HashTypes } from "./hash/HashTypes";
 import path from "path";
+import { configureHttp, HttpOptions, mapWithConcurrency } from "./utils/HttpClient";
+import { getEnvVariable } from "./utils/envUtils";
+
+const DEFAULT_CONCURRENCY = 8;
+
+function getEnvInt(name: string, fallback: number): number {
+    const value = Number.parseInt(getEnvVariable(name, ""), 10);
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+export interface NexusModsOptions {
+    /** Maximum number of metadata lookups in flight (default 8, or `NM_CONCURRENCY`). */
+    concurrency?: number;
+    /** HTTP timeout and retry settings, applied library-wide (see `configureHttp`). */
+    http?: Partial<HttpOptions>;
+}
 import {
     UpdateFailure,
     UpdateOptions,
@@ -29,6 +45,7 @@ export class NexusMods {
     private modFiles: ModFile[] = [];
     private callback: Callback | null;
     private loadFailures: UpdateFailure[] = [];
+    private concurrency: number;
 
     /**
      * Creates an instance of NexusMods.
@@ -36,9 +53,14 @@ export class NexusMods {
      * @param {string} gameDirPath
      * @param {Callback} [callback]
      * @param {string} [modDirName="mods"] - The directory where mods will be stored, relative to the game directory.
+     * @param {NexusModsOptions} [options] - Concurrency and HTTP settings (see README).
      * @memberof NexusMods
      */
-    constructor(gameDirPath: string, callback?: Callback, modDirName: string = "mods") {
+    constructor(gameDirPath: string, callback?: Callback, modDirName: string = "mods", options: NexusModsOptions = {}) {
+        this.concurrency = options.concurrency ?? getEnvInt("NM_CONCURRENCY", DEFAULT_CONCURRENCY);
+        if (options.http) {
+            configureHttp(options.http);
+        }
         this.gameDir = gameDirPath;
         this.modDir = path.join(gameDirPath, modDirName);
         this.callback = callback;
@@ -192,55 +214,41 @@ export class NexusMods {
             const modrinthApi = new ModrinthAPI(this.modDirName);
             const githubReleasesApi = new GithubReleasesAPI(this.modDirName);
 
-            // Process CurseForge mods
-            for (const mod of curseforgeMods) {
-                try {
-                    const modFile = await curseforgeApi.getModFile(mod.projectId, mod.fileId);
-                    this.addModFile(modFile);
-                } catch (error) {
-                    console.error(`Failed to load CurseForge mod ${mod.displayName}:`, error);
-                    this.loadFailures.push({
-                        stage: "lookup",
-                        name: `curseforge: ${mod.displayName}`,
-                        error: errorMessage(error),
-                    });
-                }
-            }
+            type Lookup = { source: string; displayName: string; resolve: () => Promise<ModFile> };
+            const lookups: Lookup[] = [
+                ...curseforgeMods.map((mod: any): Lookup => ({
+                    source: "curseforge",
+                    displayName: mod.displayName,
+                    resolve: () => curseforgeApi.getModFile(mod.projectId, mod.fileId),
+                })),
+                ...modrinthMods.map((mod: any): Lookup => ({
+                    source: "modrinth",
+                    displayName: mod.displayName,
+                    resolve: () => modrinthApi.getModFile(mod.versionId),
+                })),
+                ...githubReleasesMods.map((mod: any): Lookup => ({
+                    source: "github-releases",
+                    displayName: mod.displayName,
+                    resolve: () => githubReleasesApi.getModFile(mod.owner, mod.repoName, mod.tag, mod.assetName),
+                })),
+            ];
 
-            // Process Modrinth mods
-            for (const mod of modrinthMods) {
-                try {
-                    const modFile = await modrinthApi.getModFile(mod.versionId);
-                    this.addModFile(modFile);
-                } catch (error) {
-                    console.error(`Failed to load Modrinth mod ${mod.displayName}:`, error);
-                    this.loadFailures.push({
-                        stage: "lookup",
-                        name: `modrinth: ${mod.displayName}`,
-                        error: errorMessage(error),
-                    });
-                }
-            }
+            // Resolve metadata with bounded concurrency; results keep the mod list order.
+            const results = await mapWithConcurrency(lookups, this.concurrency, lookup => lookup.resolve());
 
-            // Process GitHub Releases mods
-            for (const mod of githubReleasesMods) {
-                try {
-                    const modFile = await githubReleasesApi.getModFile(
-                        mod.owner,
-                        mod.repoName,
-                        mod.tag,
-                        mod.assetName
-                    );
-                    this.addModFile(modFile);
-                } catch (error) {
-                    console.error(`Failed to load GitHub Release mod ${mod.displayName}:`, error);
+            results.forEach((res, i) => {
+                const lookup = lookups[i];
+                if ("value" in res) {
+                    this.addModFile(res.value);
+                } else if ("error" in res) {
+                    console.error(`Failed to load ${lookup.source} mod ${lookup.displayName}:`, errorMessage(res.error));
                     this.loadFailures.push({
                         stage: "lookup",
-                        name: `github-releases: ${mod.displayName}`,
-                        error: errorMessage(error),
+                        name: `${lookup.source}: ${lookup.displayName}`,
+                        error: errorMessage(res.error),
                     });
                 }
-            }
+            });
 
             // Process External Files
             if (externalFilesUrl) {

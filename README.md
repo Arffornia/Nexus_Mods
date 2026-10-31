@@ -24,6 +24,7 @@ const nexusMods = new NexusMods(
     "./.minecraft",   // game directory
     callback,         // optional, see Callback below
     "mods",           // mod directory name, relative to the game directory (default: "mods")
+    { concurrency: 8, http: { timeoutMs: 30000, retries: 3 } }, // optional, see Configuration
 );
 
 await nexusMods.loadModsFromJsonUrl("https://example.com/modList.json");
@@ -128,6 +129,15 @@ An optional [`Callback`](./src/utils/Callback.ts) receives `onStep(step)` (`FETC
 |---|---|---|
 | `NM_REPLACE_ENV_VARIABLES` | `false` | Replace `${<PREFIX>...}` placeholders in file paths with env values |
 | `NM_REPLACE_ENV_VARIABLE_PREFIX` | `NM_` | Prefix of placeholders that may be replaced |
+
+| `NM_CONCURRENCY` | `8` | Max metadata lookups in flight (constructor `options.concurrency` wins) |
+| `NM_HTTP_TIMEOUT_MS` | `30000` | Per-request timeout (socket inactivity for downloads) |
+| `NM_HTTP_RETRIES` | `3` | Retries after the first attempt for network errors, timeouts, 408, 429 and 5xx |
+| `NM_HTTP_RETRY_BASE_DELAY_MS` | `500` | Exponential backoff base (doubled per retry, with jitter) |
+| `NM_HTTP_RETRY_MAX_DELAY_MS` | `10000` | Cap of a single backoff delay |
+
+HTTP settings are library-wide; `options.http` in the constructor and `configureHttp({...})` override
+them for all subsequent requests. Other 4xx responses (404, 403) and hash mismatches are not retried.
 
 Example: with `NM_REPLACE_ENV_VARIABLES=true` and `NM_SERVER_ID=arcane`, an index entry
 `config/bluemap/maps/${NM_SERVER_ID}_world.conf` is written as `config/bluemap/maps/arcane_world.conf`.
