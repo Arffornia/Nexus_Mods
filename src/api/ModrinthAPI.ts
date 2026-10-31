@@ -1,6 +1,7 @@
 import axios from 'axios';
 import path from 'path';
 import { ModFile } from '@src/ModFile';
+import { assertPlainFileName } from '@src/utils/fileUtils';
 import { HashTypes } from '@src/hash/HashTypes';
 import { USER_AGENT } from "./../utils/HttpUtils";
 
@@ -41,7 +42,7 @@ export class ModrinthAPI {
             const fileData = data.files[0];
 
             const modFile: ModFile = new ModFile(
-                path.join(this.modDir, fileData.filename),
+                path.join(this.modDir, assertPlainFileName(fileData.filename)),
                 fileData.hashes.sha1,
                 HashTypes.SHA1,
                 fileData.url
