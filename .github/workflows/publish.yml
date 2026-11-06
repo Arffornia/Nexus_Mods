@@ -22,7 +22,7 @@ jobs:
       contents: read
       id-token: write # OIDC identity for npm trusted publishing (and provenance)
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v5
         with:
