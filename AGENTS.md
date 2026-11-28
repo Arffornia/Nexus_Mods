@@ -39,7 +39,8 @@ make build       # tsc + tsc-alias -> dist/
 ## Hard rules
 - English for code, comments, docs, commits, issues.
 - This is the owner's library: improve it, never replace it with a third-party package.
-- Never commit secrets or API keys. Never merge, tag, publish or push to `main`.
+- Never commit secrets or API keys.
+- Agents may merge their own PRs (squash) after CI is green and an agent review found no blocking issue. Agents never tag, release, push to main directly, or change production.
 - Keep the public API backward compatible (consumers pin exact versions). New behaviour goes behind
   options or new return fields; document it in README and note any version bump in the PR.
 
